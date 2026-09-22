@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Performance — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body{background:#f8fafc;}
+    .dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    .sidebar{background:var(--dark);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:1.25rem 1.25rem 0;display:flex;align-items:center;gap:.55rem;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:1rem;}
+    .sidebar-logo .logo-icon{width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:.5rem 1rem;}
+    .sidebar-nav{flex:1;padding:0 .75rem;}
+    .sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,.08);}
+    .user-chip{display:flex;align-items:center;gap:.65rem;padding:.6rem .5rem;border-radius:8px;}
+    .user-chip .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+    .user-chip strong{display:block;font-size:.85rem;color:#fff;line-height:1.2;}
+    .user-chip span{font-size:.75rem;color:rgba(255,255,255,.4);}
+    .dash-main{padding:2rem;overflow-y:auto;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem;margin-bottom:2rem;}
+    .kpi-card{background:#fff;border-radius:14px;padding:1.4rem;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+    .kpi-icon{font-size:1.4rem;margin-bottom:.4rem;}
+    .kpi-val{font-size:1.9rem;font-weight:800;line-height:1;}
+    .kpi-lbl{font-size:.82rem;color:var(--gray-500);}
+
+    .sc{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1.5rem;overflow:hidden;}
+    .sc-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--gray-100);}
+    .sc-head h3{margin:0;font-size:1rem;}
+    .sc-body{padding:1.5rem;}
+
+    /* Review card */
+    .review-card{border:1.5px solid var(--gray-100);border-radius:12px;padding:1.25rem;transition:border-color .2s,box-shadow .2s;}
+    .review-card:hover{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.06);}
+    .review-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.85rem;}
+    .review-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#fff;flex-shrink:0;}
+    .review-name{font-weight:700;font-size:.95rem;}
+    .review-role{font-size:.78rem;color:var(--gray-500);}
+    .star-row{display:flex;gap:2px;margin:.4rem 0;}
+    .star{font-size:1rem;color:#fbbf24;}
+    .star.empty{color:var(--gray-300);}
+    .rating-bars{display:flex;flex-direction:column;gap:.4rem;margin:.85rem 0;}
+    .rb-row{display:flex;align-items:center;gap:.6rem;font-size:.78rem;}
+    .rb-label{min-width:90px;color:var(--gray-600);}
+    .rb-track{flex:1;height:6px;background:var(--gray-100);border-radius:999px;overflow:hidden;}
+    .rb-fill{height:100%;border-radius:999px;background:var(--primary);}
+    .rb-val{min-width:22px;font-weight:700;color:var(--gray-700);}
+
+    /* Goal tracker */
+    .goal-item{display:flex;align-items:center;gap:.85rem;padding:.85rem 0;border-bottom:1px solid var(--gray-100);}
+    .goal-item:last-child{border-bottom:none;}
+    .goal-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+    .goal-text strong{display:block;font-size:.88rem;color:var(--gray-900);}
+    .goal-text span{font-size:.76rem;color:var(--gray-500);}
+    .goal-pct{font-size:.88rem;font-weight:700;min-width:36px;text-align:right;}
+    .goal-track-wrap{flex:1;}
+    .goal-track{height:6px;background:var(--gray-100);border-radius:999px;overflow:hidden;margin-top:.3rem;}
+    .goal-fill{height:100%;border-radius:999px;}
+
+    /* 360 radar using CSS */
+    .radar-wrap{display:flex;flex-direction:column;align-items:center;gap:.75rem;}
+    .radar-bar-row{width:100%;display:flex;align-items:center;gap:.75rem;font-size:.82rem;}
+    .radar-label{min-width:120px;color:var(--gray-700);font-weight:600;}
+    .radar-track{flex:1;height:10px;background:var(--gray-100);border-radius:999px;overflow:hidden;}
+    .radar-fill{height:100%;border-radius:999px;}
+    .radar-score{min-width:32px;font-weight:700;text-align:right;}
+
+    @media(max-width:1024px){.dash-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar-mount"></aside>
+  <main class="dash-main">
+    <div class="topbar">
+      <div><h2>🎯 Performance</h2><p style="margin:0;font-size:.88rem;color:var(--gray-500);">Track goals, reviews, and team performance cycles.</p></div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="showToast('Report exported','info')">⬇ Export</button>
+        <button class="btn btn-primary" data-modal-open="newReviewModal">+ Start Review Cycle</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-val">4.3</div><div class="kpi-lbl">Avg Performance Score</div></div>
+      <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-val">89%</div><div class="kpi-lbl">Goals Completed</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📝</div><div class="kpi-val">156</div><div class="kpi-lbl">Reviews Completed</div></div>
+      <div class="kpi-card"><div class="kpi-icon">⏰</div><div class="kpi-val">38</div><div class="kpi-lbl">Reviews Pending</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🚀</div><div class="kpi-val">24</div><div class="kpi-lbl">High Performers</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div data-tabs>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="reviews">Reviews</button>
+        <button class="tab-btn" data-tab="goals">Goals</button>
+        <button class="tab-btn" data-tab="360">360° Feedback</button>
+        <button class="tab-btn" data-tab="ratings">Rating Distribution</button>
+      </div>
+
+      <!-- REVIEWS -->
+      <div class="tab-panel active" id="tab-reviews">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            <select class="filter-select" style="padding:.4rem .75rem;font-size:.85rem;" id="reviewCycleFilter">
+              <option>Q3 2026 (Current)</option><option>Q2 2026</option><option>Q1 2026</option>
+            </select>
+            <select class="filter-select" style="padding:.4rem .75rem;font-size:.85rem;" id="reviewStatusFilter">
+              <option value="">All Statuses</option><option>Completed</option><option>In Progress</option><option>Not Started</option>
+            </select>
+          </div>
+          <input class="search-input" style="max-width:220px;padding:.4rem .8rem;font-size:.85rem;" placeholder="Search employee…" id="reviewSearch"/>
+        </div>
+        <div class="grid-3" id="reviewCards"></div>
+      </div>
+
+      <!-- GOALS -->
+      <div class="tab-panel" id="tab-goals">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+          <h3 style="margin:0;">Company-Wide Goals — Q3 2026</h3>
+          <button class="btn btn-primary btn-sm" data-modal-open="newGoalModal">+ Add Goal</button>
+        </div>
+        <div class="sc">
+          <div class="sc-body" style="padding:1rem 1.5rem;" id="goalList"></div>
+        </div>
+        <h3 style="margin-bottom:1rem;">Individual Goals</h3>
+        <div class="sc">
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead><tr><th>Employee</th><th>Goal</th><th>Due Date</th><th>Progress</th><th>Status</th></tr></thead>
+              <tbody id="indvGoals"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 360 -->
+      <div class="tab-panel" id="tab-360">
+        <div class="grid-2">
+          <div class="sc">
+            <div class="sc-head"><h3>Sarah Mitchell — 360° Review</h3><span class="badge badge-green">Completed</span></div>
+            <div class="sc-body">
+              <div class="radar-wrap" id="radarSM"></div>
+            </div>
+          </div>
+          <div class="sc">
+            <div class="sc-head"><h3>James Okafor — 360° Review</h3><span class="badge badge-green">Completed</span></div>
+            <div class="sc-body">
+              <div class="radar-wrap" id="radarJO"></div>
+            </div>
+          </div>
+        </div>
+        <div class="sc">
+          <div class="sc-head"><h3>Pending 360° Feedback Requests</h3></div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead><tr><th>Employee</th><th>Reviewers</th><th>Deadline</th><th>Responses</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td><div class="employee-info"><div class="employee-avatar" style="background:linear-gradient(135deg,#7c3aed,#d97706);">EV</div><span class="employee-name">Elena Vasquez</span></div></td><td>5 assigned</td><td>Sep 30, 2026</td><td>3 / 5</td><td><button class="btn btn-outline btn-sm" onclick="showToast('Reminder sent to reviewers','info')">Send Reminder</button></td></tr>
+                <tr><td><div class="employee-info"><div class="employee-avatar" style="background:linear-gradient(135deg,#16a34a,#0ea5e9);">CR</div><span class="employee-name">Carlos Rivera</span></div></td><td>4 assigned</td><td>Sep 30, 2026</td><td>1 / 4</td><td><button class="btn btn-outline btn-sm" onclick="showToast('Reminder sent to reviewers','info')">Send Reminder</button></td></tr>
+                <tr><td><div class="employee-info"><div class="employee-avatar" style="background:linear-gradient(135deg,#dc2626,#d97706);">TH</div><span class="employee-name">Tom Henderson</span></div></td><td>6 assigned</td><td>Oct 5, 2026</td><td>0 / 6</td><td><button class="btn btn-primary btn-sm" onclick="showToast('Feedback form opened','info')">Give Feedback</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RATING DISTRIBUTION -->
+      <div class="tab-panel" id="tab-ratings">
+        <div class="grid-2">
+          <div class="sc">
+            <div class="sc-head"><h3>Rating Distribution — Q3 2026</h3></div>
+            <div class="sc-body" id="ratingDist"></div>
+          </div>
+          <div class="sc">
+            <div class="sc-head"><h3>Top Performers</h3></div>
+            <div id="topPerfList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Start Review Modal -->
+<div class="modal-overlay" id="newReviewModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Start New Review Cycle</h3><button class="modal-close" data-modal-close="newReviewModal">✕</button></div>
+    <div class="modal-body">
+      <form id="reviewCycleForm">
+        <div class="form-group"><label class="form-label">Cycle Name</label><input class="form-control" name="name" placeholder="e.g. Q4 2026 Annual Review" required/></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Start Date</label><input type="date" class="form-control" name="start" required/></div>
+          <div class="form-group"><label class="form-label">End Date</label><input type="date" class="form-control" name="end" required/></div>
+        </div>
+        <div class="form-group"><label class="form-label">Review Type</label>
+          <select class="form-control" name="type"><option>Self + Manager</option><option>360° Feedback</option><option>Manager Only</option></select></div>
+        <div class="form-group"><label class="form-label">Employees Included</label>
+          <select class="form-control" name="scope"><option>All Employees (248)</option><option>Full-Time Only</option><option>Custom Selection</option></select></div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:1rem;">
+          <button type="button" class="btn btn-outline" data-modal-close="newReviewModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Launch Cycle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- New Goal Modal -->
+<div class="modal-overlay" id="newGoalModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Add New Goal</h3><button class="modal-close" data-modal-close="newGoalModal">✕</button></div>
+    <div class="modal-body">
+      <form id="goalForm">
+        <div class="form-group"><label class="form-label">Goal Title</label><input class="form-control" name="title" placeholder="e.g. Increase team NPS by 10 pts" required/></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-control" name="desc" rows="2" placeholder="Describe the goal…"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Owner</label>
+            <select class="form-control" name="owner"><option>Company-Wide</option><option>Engineering</option><option>Sales</option></select></div>
+          <div class="form-group"><label class="form-label">Due Date</label><input type="date" class="form-control" name="due" required/></div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:1rem;">
+          <button type="button" class="btn btn-outline" data-modal-close="newGoalModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="sidebar.js"></script>
+<script>
+// Review cards data
+const reviews=[
+  {name:'Sarah Mitchell', role:'Senior Designer',    init:'SM', col:'#2563eb', score:4.8, status:'Completed'},
+  {name:'James Okafor',   role:'Lead BE Engineer',   init:'JO', col:'#16a34a', score:4.6, status:'Completed'},
+  {name:'Tom Henderson',  role:'Operations Director',init:'TH', col:'#dc2626', score:4.5, status:'In Progress'},
+  {name:'Elena Vasquez',  role:'HR Business Partner',init:'EV', col:'#7c3aed', score:4.2, status:'In Progress'},
+  {name:'Carlos Rivera',  role:'Account Executive',  init:'CR', col:'#0ea5e9', score:3.9, status:'In Progress'},
+  {name:'Amara Diallo',   role:'Financial Analyst',  init:'AD', col:'#d97706', score:4.0, status:'Completed'},
+  {name:'Liu Wei',        role:'Frontend Engineer',  init:'LW', col:'#0f172a', score:null,status:'Not Started'},
+  {name:'Priya Nair',     role:'Marketing Manager',  init:'PN', col:'#ef4444', score:null,status:'Not Started'},
+];
+function renderReviews(data){
+  const sc=document.getElementById('reviewCards');
+  sc.innerHTML=data.map(r=>{
+    const stars=r.score?Math.round(r.score):0;
+    const starHtml=Array.from({length:5},(_,i)=>`<span class="star${i>=stars?' empty':''}">${i<stars?'★':'☆'}</span>`).join('');
+    const sc2=r.status==='Completed'?'badge-green':r.status==='In Progress'?'badge-yellow':'badge-red';
+    const dims=[{k:'Communication',v:Math.min(r.score?Math.round(r.score*18):0,100)},{k:'Teamwork',v:Math.min(r.score?Math.round(r.score*19):0,100)},{k:'Delivery',v:Math.min(r.score?Math.round(r.score*17):0,100)}];
+    return `<div class="card review-card">
+      <div class="review-header">
+        <div class="review-avatar" style="background:${r.col};">${r.init}</div>
+        <div><div class="review-name">${r.name}</div><div class="review-role">${r.role}</div></div>
+        <span class="badge ${sc2}" style="margin-left:auto;">${r.status}</span>
+      </div>
+      ${r.score?`<div class="star-row">${starHtml}</div><div style="font-size:.82rem;color:var(--gray-500);margin-bottom:.5rem;">${r.score}/5.0 overall</div>
+      <div class="rating-bars">${dims.map(d=>`<div class="rb-row"><span class="rb-label">${d.k}</span><div class="rb-track"><div class="rb-fill" style="width:${d.v}%;"></div></div><span class="rb-val">${(d.v/20).toFixed(1)}</span></div>`).join('')}</div>`
+      :`<p style="font-size:.85rem;color:var(--gray-400);margin:.75rem 0;">Review not yet started</p>`}
+      <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center;margin-top:.5rem;" onclick="showToast('${r.status==='Completed'?'Opening review details':'Starting review for '+r.name}','info')">${r.status==='Completed'?'View Review':r.status==='Not Started'?'Start Review':'Continue Review'}</button>
+    </div>`;
+  }).join('');
+}
+renderReviews(reviews);
+document.getElementById('reviewSearch').addEventListener('input',function(){
+  renderReviews(reviews.filter(r=>r.name.toLowerCase().includes(this.value.toLowerCase())));
+});
+document.getElementById('reviewStatusFilter').addEventListener('change',function(){
+  renderReviews(this.value?reviews.filter(r=>r.status===this.value):reviews);
+});
+
+// Goals
+const companyGoals=[
+  {title:'Reduce time-to-hire to 21 days',owner:'Talent',pct:60,color:'var(--primary)'},
+  {title:'Achieve 95% employee survey participation',owner:'HR',pct:72,color:'var(--success)'},
+  {title:'Complete all Q3 performance reviews',owner:'People Ops',pct:80,color:'var(--accent)'},
+  {title:'Launch new L&D platform',owner:'Training',pct:45,color:'var(--warning)'},
+  {title:'Reduce voluntary turnover to <8%',owner:'All Depts',pct:88,color:'var(--secondary)'},
+];
+const gl=document.getElementById('goalList');
+companyGoals.forEach(g=>{
+  gl.innerHTML+=`<div class="goal-item">
+    <div class="goal-icon" style="background:var(--gray-100);">🎯</div>
+    <div class="goal-track-wrap" style="flex:1;">
+      <strong style="font-size:.88rem;display:block;">${g.title}</strong>
+      <span style="font-size:.76rem;color:var(--gray-500);">Owner: ${g.owner}</span>
+      <div class="goal-track"><div class="goal-fill" style="width:${g.pct}%;background:${g.color};"></div></div>
+    </div>
+    <div class="goal-pct" style="color:${g.color};">${g.pct}%</div>
+    <button class="btn btn-outline btn-sm" style="margin-left:.75rem;" onclick="showToast('Goal updated','success')">Update</button>
+  </div>`;
+});
+
+// Individual goals
+const indvData=[
+  {name:'Sarah Mitchell',goal:'Redesign onboarding UI flow',due:'Oct 15',pct:80,status:'On Track'},
+  {name:'James Okafor', goal:'Migrate API to GraphQL',     due:'Sep 30',pct:55,status:'On Track'},
+  {name:'Carlos Rivera',goal:'Reach $500k ARR this quarter',due:'Sep 30',pct:68,status:'At Risk'},
+  {name:'Tom Henderson',goal:'Implement ISO 9001 process', due:'Nov 1', pct:30,status:'Behind'},
+  {name:'Elena Vasquez',goal:'Reduce HR tickets by 40%',   due:'Oct 30',pct:90,status:'On Track'},
+];
+const ig=document.getElementById('indvGoals');
+ig.innerHTML=indvData.map(r=>{
+  const init=r.name.split(' ').map(n=>n[0]).join('');
+  const sc=r.status==='On Track'?'badge-green':r.status==='At Risk'?'badge-yellow':'badge-red';
+  return `<tr><td><div class="employee-info"><div class="employee-avatar" style="background:var(--primary);">${init}</div><span class="employee-name">${r.name}</span></div></td>
+    <td>${r.goal}</td><td>${r.due}</td>
+    <td><div style="display:flex;align-items:center;gap:.5rem;">
+      <div style="flex:1;height:6px;background:var(--gray-100);border-radius:999px;overflow:hidden;"><div style="width:${r.pct}%;height:100%;background:var(--primary);border-radius:999px;"></div></div>
+      <span style="font-size:.8rem;font-weight:700;">${r.pct}%</span>
+    </div></td>
+    <td><span class="badge ${sc}">${r.status}</span></td>
+  </tr>`;
+}).join('');
+
+// 360 radar charts
+function buildRadar(id, data){
+  const el=document.getElementById(id);
+  data.forEach(d=>{
+    el.innerHTML+=`<div class="radar-bar-row">
+      <span class="radar-label">${d.label}</span>
+      <div class="radar-track"><div class="radar-fill" style="width:${d.v}%;background:${d.color||'var(--primary)'};"></div></div>
+      <span class="radar-score">${(d.v/20).toFixed(1)}</span>
+    </div>`;
+  });
+}
+buildRadar('radarSM',[
+  {label:'Leadership',    v:92,color:'#2563eb'},{label:'Communication',v:96,color:'#7c3aed'},
+  {label:'Creativity',    v:98,color:'#0ea5e9'},{label:'Delivery',     v:90,color:'#16a34a'},
+  {label:'Teamwork',      v:94,color:'#d97706'},
+]);
+buildRadar('radarJO',[
+  {label:'Technical Skill',v:98,color:'#16a34a'},{label:'Problem Solving',v:94,color:'#2563eb'},
+  {label:'Communication',  v:82,color:'#7c3aed'},{label:'Delivery',       v:96,color:'#0ea5e9'},
+  {label:'Mentorship',     v:88,color:'#d97706'},
+]);
+
+// Rating distribution
+const ratings=[
+  {label:'Exceptional (4.5–5)',n:24,color:'#16a34a'},
+  {label:'Exceeds (3.5–4.4)', n:68,color:'#2563eb'},
+  {label:'Meets (2.5–3.4)',   n:52,color:'#d97706'},
+  {label:'Below (1.5–2.4)',   n:10,color:'#ef4444'},
+  {label:'Unsatisfactory (<1.5)',n:2,color:'#dc2626'},
+];
+const rd=document.getElementById('ratingDist');
+const maxR=Math.max(...ratings.map(r=>r.n));
+ratings.forEach(r=>{
+  rd.innerHTML+=`<div style="margin-bottom:.85rem;">
+    <div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:600;margin-bottom:.3rem;">
+      <span>${r.label}</span><span>${r.n} employees</span>
+    </div>
+    <div style="height:22px;background:var(--gray-100);border-radius:6px;overflow:hidden;">
+      <div style="width:${Math.round(r.n/maxR*100)}%;height:100%;background:${r.color};border-radius:6px;display:flex;align-items:center;padding-left:.5rem;">
+        ${r.n>5?`<span style="font-size:.72rem;color:#fff;font-weight:700;">${Math.round(r.n/(156)*100)}%</span>`:''}
+      </div>
+    </div>
+  </div>`;
+});
+
+// Top performers
+const topPerf=[
+  {name:'Sarah Mitchell',score:4.8,col:'#2563eb',init:'SM'},
+  {name:'James Okafor', score:4.6,col:'#16a34a',init:'JO'},
+  {name:'Tom Henderson',score:4.5,col:'#dc2626',init:'TH'},
+  {name:'Amara Diallo', score:4.0,col:'#d97706',init:'AD'},
+  {name:'Elena Vasquez',score:4.2,col:'#7c3aed',init:'EV'},
+];
+const tp=document.getElementById('topPerfList');
+topPerf.sort((a,b)=>b.score-a.score).forEach((p,i)=>{
+  tp.innerHTML+=`<div style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem;border-bottom:1px solid var(--gray-100);">
+    <span style="font-size:.85rem;font-weight:800;color:var(--gray-400);min-width:20px;">#${i+1}</span>
+    <div class="employee-avatar" style="background:${p.col};">${p.init}</div>
+    <span class="employee-name" style="flex:1;">${p.name}</span>
+    <div style="display:flex;gap:2px;">${'★'.repeat(Math.round(p.score))}</div>
+    <strong style="font-size:.9rem;">${p.score}</strong>
+  </div>`;
+});
+
+// Forms
+document.getElementById('reviewCycleForm').addEventListener('submit',e=>{e.preventDefault();closeModal('newReviewModal');e.target.reset();showToast('Review cycle launched!','success');});
+document.getElementById('goalForm').addEventListener('submit',e=>{e.preventDefault();closeModal('newGoalModal');e.target.reset();showToast('Goal added successfully!','success');});
+</script>
+</body>
+</html>

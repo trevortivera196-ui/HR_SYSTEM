@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PeopleCore HR — Modern Human Resources Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Page-specific extras */
+    .testimonial-card { padding: 1.75rem; }
+    .testimonial-card p { font-size: 1rem; color: var(--gray-700); font-style: italic; line-height: 1.7; }
+    .testimonial-author { display: flex; align-items: center; gap: .75rem; margin-top: 1.25rem; }
+    .testimonial-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #fff; font-size: .9rem;
+    }
+    .testimonial-author strong { display: block; font-size: .9rem; color: var(--gray-900); }
+    .testimonial-author span  { font-size: .8rem; color: var(--gray-500); }
+
+    .step-number {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem; flex-shrink: 0;
+    }
+    .step { display: flex; gap: 1.25rem; align-items: flex-start; padding: 1.5rem 0; }
+    .step + .step { border-top: 1px dashed var(--gray-300); }
+    .step-content h3 { margin-bottom: .35rem; }
+
+    .cta-section {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      padding: 5rem 0; text-align: center; color: #fff;
+    }
+    .cta-section h2 { color: #fff; margin-bottom: 1rem; }
+    .cta-section p  { color: rgba(255,255,255,.8); font-size: 1.05rem; margin-bottom: 2rem; }
+
+    .pricing-card { padding: 2rem; position: relative; overflow: hidden; }
+    .pricing-card.featured { border: 2px solid var(--primary); }
+    .pricing-card .popular-badge {
+      position: absolute; top: 1rem; right: 1rem;
+      background: var(--primary); color: #fff;
+      font-size: .72rem; font-weight: 700; padding: .25rem .65rem; border-radius: 999px;
+    }
+    .pricing-price { font-size: 2.5rem; font-weight: 800; color: var(--gray-900); margin: .75rem 0; }
+    .pricing-price span { font-size: 1rem; font-weight: 500; color: var(--gray-500); }
+    .pricing-features { margin: 1.25rem 0; display: flex; flex-direction: column; gap: .6rem; }
+    .pricing-features li { font-size: .9rem; color: var(--gray-700); display: flex; align-items: center; gap: .5rem; }
+    .pricing-features li::before { content: "✓"; color: var(--success); font-weight: 700; }
+
+    .partner-logos {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+      gap: 2rem; padding: 1rem;
+    }
+    .partner-logo {
+      background: var(--white); border-radius: 10px; padding: .85rem 1.5rem;
+      box-shadow: var(--shadow-sm); font-weight: 800; font-size: 1.1rem;
+      color: var(--gray-300); letter-spacing: .05em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-icon">👥</div>
+      PeopleCore
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="employees.html">Employees</a></li>
+      <li><a href="recruitment.html">Recruitment</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="dashboard.html" class="btn btn-outline btn-sm">Log In</a>
+      <a href="dashboard.html" class="btn btn-primary btn-sm">Get Started</a>
+      <div class="nav-avatar" title="Admin User">A</div>
+    </div>
+    <button class="nav-hamburger" aria-label="Open menu">☰</button>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <div class="hero-tag">🚀 Trusted by 2,000+ companies</div>
+      <h1>Modern HR for<br />Modern Teams</h1>
+      <p>PeopleCore streamlines your entire HR operation — from hiring to payroll, performance reviews to employee engagement — all in one powerful platform.</p>
+      <div class="hero-btns">
+        <a href="dashboard.html" class="btn btn-primary btn-lg">Start Free Trial</a>
+        <a href="#features" class="btn btn-ghost btn-lg">Explore Features</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong data-target="2400" data-suffix="+">0+</strong>
+          <span>Companies</span>
+        </div>
+        <div class="hero-stat">
+          <strong data-target="98" data-suffix="%">0%</strong>
+          <span>Satisfaction</span>
+        </div>
+        <div class="hero-stat">
+          <strong data-target="50" data-suffix="k+">0k+</strong>
+          <span>Employees Managed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-card-stack">
+        <div class="hcard-float f1">
+          <span class="dot dot-green"></span> 12 new applications today
+        </div>
+        <div class="hcard" style="margin-top:2rem;">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;">
+            <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">👤</div>
+            <div>
+              <strong style="display:block;">Sarah Mitchell</strong>
+              <span style="font-size:.8rem;opacity:.7;">Senior Designer · Active</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+            <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center;">
+              <strong style="display:block;font-size:1.3rem;">4.9</strong>
+              <span style="font-size:.75rem;opacity:.7;">Performance</span>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:8px;padding:.75rem;text-align:center;">
+              <strong style="display:block;font-size:1.3rem;">98%</strong>
+              <span style="font-size:.75rem;opacity:.7;">Attendance</span>
+            </div>
+          </div>
+          <div style="margin-top:1rem;background:rgba(255,255,255,.08);border-radius:8px;padding:.85rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.4rem;">
+              <span>Goals Completed</span><span>7/10</span>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,.15);border-radius:999px;">
+              <div style="width:70%;height:100%;background:#7c3aed;border-radius:999px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="hcard-float f2">
+          <span class="dot dot-blue"></span> Payroll processed · $142k
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PARTNER LOGOS ===== -->
+<section style="background:var(--white);padding:2.5rem 0;border-bottom:1px solid var(--gray-100);">
+  <div class="container">
+    <p style="text-align:center;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gray-300);margin-bottom:1.5rem;">Trusted by leading companies</p>
+    <div class="partner-logos">
+      <div class="partner-logo">NEXUS</div>
+      <div class="partner-logo">VERITEX</div>
+      <div class="partner-logo">AXIOM</div>
+      <div class="partner-logo">STRATUM</div>
+      <div class="partner-logo">CRESTLINE</div>
+      <div class="partner-logo">ORBIS</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STAT OVERVIEW ===== -->
+<section class="section" style="background:var(--white);">
+  <div class="container">
+    <div class="grid-4">
+      <div class="card stat-card">
+        <div class="icon" style="background:#dbeafe;">👥</div>
+        <strong data-target="1248" data-suffix="">0</strong>
+        <p>Total Employees</p>
+        <div class="trend trend-up">▲ 12% this month</div>
+      </div>
+      <div class="card stat-card">
+        <div class="icon" style="background:#dcfce7;">📋</div>
+        <strong data-target="34" data-suffix="">0</strong>
+        <p>Open Positions</p>
+        <div class="trend trend-up">▲ 5 new this week</div>
+      </div>
+      <div class="card stat-card">
+        <div class="icon" style="background:#fef3c7;">⏱️</div>
+        <strong data-target="96" data-suffix="%">0%</strong>
+        <p>Attendance Rate</p>
+        <div class="trend trend-up">▲ 2% vs last month</div>
+      </div>
+      <div class="card stat-card">
+        <div class="icon" style="background:#ede9fe;">🎯</div>
+        <strong data-target="89" data-suffix="%">0%</strong>
+        <p>Goal Completion</p>
+        <div class="trend trend-down">▼ 3% vs last quarter</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-blue" style="margin-bottom:.75rem;">Features</div>
+      <h2>Everything you need to manage your people</h2>
+      <p>A complete suite of HR tools designed to save time and improve the employee experience.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card feature-card">
+        <div class="icon" style="background:#dbeafe;">🗂️</div>
+        <h3>Employee Management</h3>
+        <p>Centralize all employee records, documents, and data in one secure, searchable database.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon" style="background:#dcfce7;">💰</div>
+        <h3>Payroll Processing</h3>
+        <p>Automate payroll calculations, tax deductions, and direct deposits with full compliance.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon" style="background:#fef3c7;">📅</div>
+        <h3>Leave Management</h3>
+        <p>Track vacation, sick days, and other absences with automated approval workflows.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon" style="background:#ede9fe;">🎯</div>
+        <h3>Performance Reviews</h3>
+        <p>Set goals, collect 360° feedback, and run structured performance cycles at any cadence.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon" style="background:#fee2e2;">📣</div>
+        <h3>Recruitment & ATS</h3>
+        <p>Post jobs, manage candidates, schedule interviews, and onboard new hires seamlessly.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="icon" style="background:#e0f2fe;">📊</div>
+        <h3>Analytics & Reports</h3>
+        <p>Turn your HR data into actionable insights with real-time dashboards and custom reports.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section" style="background:var(--white);">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-purple" style="margin-bottom:.75rem;">How It Works</div>
+      <h2>Up and running in minutes</h2>
+      <p>A simple three-step setup to transform your HR operations.</p>
+    </div>
+    <div style="max-width:680px;margin:0 auto;" class="card card-body">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Import your team</h3>
+          <p>Upload your existing employee data via CSV or connect to your current HRIS. We map the fields automatically.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Configure your policies</h3>
+          <p>Set leave policies, payroll schedules, performance cycles, and approval chains to match your organization.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Invite your team</h3>
+          <p>Employees get a self-service portal. Managers get real-time dashboards. HR gets their time back.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-green" style="margin-bottom:.75rem;">Pricing</div>
+      <h2>Simple, transparent pricing</h2>
+      <p>No hidden fees. Cancel any time.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card pricing-card">
+        <h3>Starter</h3>
+        <div class="pricing-price">$9 <span>/ user / month</span></div>
+        <p style="font-size:.88rem;">Perfect for small teams getting started with HR software.</p>
+        <ul class="pricing-features">
+          <li>Up to 25 employees</li>
+          <li>Employee directory</li>
+          <li>Leave management</li>
+          <li>Basic reporting</li>
+          <li>Email support</li>
+        </ul>
+        <a href="dashboard.html" class="btn btn-outline" style="width:100%;justify-content:center;">Get Started</a>
+      </div>
+      <div class="card pricing-card featured">
+        <div class="popular-badge">Most Popular</div>
+        <h3>Professional</h3>
+        <div class="pricing-price">$19 <span>/ user / month</span></div>
+        <p style="font-size:.88rem;">For growing companies that need full HR coverage.</p>
+        <ul class="pricing-features">
+          <li>Unlimited employees</li>
+          <li>Payroll processing</li>
+          <li>Recruitment & ATS</li>
+          <li>Performance reviews</li>
+          <li>Advanced analytics</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="dashboard.html" class="btn btn-primary" style="width:100%;justify-content:center;">Get Started</a>
+      </div>
+      <div class="card pricing-card">
+        <h3>Enterprise</h3>
+        <div class="pricing-price">Custom</div>
+        <p style="font-size:.88rem;">For large organizations with complex requirements.</p>
+        <ul class="pricing-features">
+          <li>Everything in Pro</li>
+          <li>Custom integrations</li>
+          <li>Dedicated HR advisor</li>
+          <li>SSO & advanced security</li>
+          <li>SLA guarantee</li>
+          <li>On-premise option</li>
+        </ul>
+        <a href="#contact" class="btn btn-outline" style="width:100%;justify-content:center;">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="section" style="background:var(--white);">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge badge-yellow" style="margin-bottom:.75rem;">Testimonials</div>
+      <h2>Loved by HR teams everywhere</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card testimonial-card">
+        <p>"PeopleCore cut our payroll processing time in half. What used to take a full day now takes about an hour. The automation is genuinely impressive."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed);">JL</div>
+          <div>
+            <strong>Jessica Liu</strong>
+            <span>Head of HR · Nexus Corp</span>
+          </div>
+        </div>
+      </div>
+      <div class="card testimonial-card">
+        <p>"The recruitment module is a game-changer. We went from drowning in spreadsheets to having a clear pipeline for every role. Highly recommend."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#0ea5e9,#16a34a);">MR</div>
+          <div>
+            <strong>Marcus Reed</strong>
+            <span>Talent Acquisition · Veritex</span>
+          </div>
+        </div>
+      </div>
+      <div class="card testimonial-card">
+        <p>"Our employees love the self-service portal. Support tickets for basic HR questions have dropped by over 80% since we switched to PeopleCore."</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar" style="background:linear-gradient(135deg,#d97706,#dc2626);">AP</div>
+          <div>
+            <strong>Aisha Patel</strong>
+            <span>People Ops Manager · Axiom</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section" id="contact">
+  <div class="container">
+    <div class="badge badge-blue" style="margin-bottom:1rem;background:rgba(255,255,255,.15);color:#fff;">Get Started Today</div>
+    <h2>Ready to transform your HR?</h2>
+    <p>Join 2,400+ companies that trust PeopleCore to manage their most important asset — their people.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="dashboard.html" class="btn btn-ghost btn-lg">Start 14-Day Free Trial</a>
+      <a href="recruitment.html" class="btn btn-lg" style="background:#fff;color:var(--primary);">View Open Roles</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="color:#fff;">
+          <div class="logo-icon">👥</div>
+          PeopleCore
+        </div>
+        <p>The modern HR platform built for teams that care about their people. Automate the routine. Focus on the human.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="#">Integrations</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Blog</a>
+        <a href="#">Careers</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>HR Tools</h4>
+        <a href="employees.html">Employees</a>
+        <a href="recruitment.html">Recruitment</a>
+        <a href="#">Payroll</a>
+        <a href="#">Performance</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 PeopleCore HR. All rights reserved.</span>
+      <span>Privacy Policy · Terms of Service · GDPR</span>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

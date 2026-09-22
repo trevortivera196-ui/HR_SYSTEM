@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: #f8fafc; }
+    .dash-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { background: var(--dark); padding: 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .sidebar-logo { padding: 1.25rem 1.25rem 0; display: flex; align-items: center; gap: .55rem; font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+    .sidebar-logo .logo-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: .9rem; }
+    .sidebar-divider { height: 1px; background: rgba(255,255,255,.08); margin: .5rem 1rem; }
+    .sidebar-nav { flex: 1; padding: 0 .75rem; }
+    .sidebar-footer { padding: 1rem; border-top: 1px solid rgba(255,255,255,.08); }
+    .user-chip { display: flex; align-items: center; gap: .65rem; padding: .6rem .5rem; border-radius: 8px; cursor: pointer; transition: var(--transition); }
+    .user-chip:hover { background: rgba(255,255,255,.06); }
+    .user-chip .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,var(--primary),var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; color: #fff; flex-shrink: 0; }
+    .user-chip strong { display: block; font-size: .85rem; color: #fff; line-height: 1.2; }
+    .user-chip span { font-size: .75rem; color: rgba(255,255,255,.4); }
+
+    /* Main content */
+    .dash-main { padding: 2rem; overflow-y: auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+    .topbar-left h2 { font-size: 1.5rem; margin-bottom: .2rem; }
+    .topbar-left p  { font-size: .88rem; margin: 0; }
+    .topbar-right { display: flex; gap: .75rem; align-items: center; }
+    .notif-btn { position: relative; width: 38px; height: 38px; border-radius: 10px; background: var(--white); border: 1.5px solid var(--gray-300); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; }
+    .notif-badge { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; background: var(--danger); border-radius: 50%; font-size: .65rem; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+    /* KPI row */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+    .kpi-card { background: var(--white); border-radius: 14px; padding: 1.4rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: .25rem; }
+    .kpi-icon { font-size: 1.5rem; margin-bottom: .35rem; }
+    .kpi-value { font-size: 2rem; font-weight: 800; color: var(--gray-900); line-height: 1; }
+    .kpi-label { font-size: .82rem; color: var(--gray-500); }
+    .kpi-change { font-size: .8rem; font-weight: 600; margin-top: .35rem; }
+    .kpi-change.up   { color: var(--success); }
+    .kpi-change.down { color: var(--danger); }
+
+    /* Charts */
+    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-card { background: var(--white); border-radius: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
+    .chart-head { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem .75rem; }
+    .chart-head h3 { margin: 0; font-size: 1rem; }
+    .bar-chart-wrap { padding: 0 1.5rem 1.5rem; }
+    .bar-chart-inner { display: flex; align-items: flex-end; gap: .6rem; height: 150px; }
+    .bc-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+    .bc-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; }
+    .bc-label { font-size: .7rem; color: var(--gray-500); white-space: nowrap; }
+    .bar-legend { display: flex; gap: 1rem; padding: .75rem 1.5rem 0; }
+    .legend-pill { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--gray-500); }
+    .legend-pill .dot { width: 10px; height: 10px; border-radius: 3px; }
+
+    /* Donut */
+    .donut-card { background: var(--white); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 1.25rem; }
+    .donut-chart-wrap { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
+    .donut-svg-wrap { position: relative; width: 130px; height: 130px; }
+    .donut-svg-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+    .donut-center strong { display: block; font-size: 1.5rem; font-weight: 800; color: var(--gray-900); }
+    .donut-center span { font-size: .72rem; color: var(--gray-500); }
+    .donut-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem .75rem; width: 100%; }
+    .donut-legend-item { display: flex; align-items: center; gap: .4rem; font-size: .78rem; }
+    .dl-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .dl-name { color: var(--gray-600); }
+    .dl-val  { font-weight: 700; color: var(--gray-900); margin-left: auto; }
+
+    /* Bottom row */
+    .bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    .list-card { background: var(--white); border-radius: 14px; box-shadow: var(--shadow-sm); overflow: hidden; }
+    .list-card-head { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--gray-100); }
+    .list-card-head h3 { font-size: .95rem; margin: 0; }
+    .list-item { display: flex; align-items: center; gap: .75rem; padding: .85rem 1.25rem; border-bottom: 1px solid var(--gray-100); transition: background var(--transition); }
+    .list-item:last-child { border-bottom: none; }
+    .list-item:hover { background: var(--gray-100); }
+    .li-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .78rem; color: #fff; flex-shrink: 0; }
+    .li-text strong { display: block; font-size: .85rem; color: var(--gray-900); }
+    .li-text span   { font-size: .76rem; color: var(--gray-500); }
+    .li-meta { margin-left: auto; text-align: right; }
+    .li-meta strong { display: block; font-size: .82rem; color: var(--gray-900); }
+    .li-meta span   { font-size: .74rem; color: var(--gray-500); }
+
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .progress-card { background: var(--white); border-radius: 14px; box-shadow: var(--shadow-sm); }
+    .prog-item { padding: .9rem 1.25rem; border-bottom: 1px solid var(--gray-100); }
+    .prog-item:last-child { border-bottom: none; }
+    .prog-row { display: flex; justify-content: space-between; font-size: .84rem; font-weight: 600; margin-bottom: .35rem; }
+    .prog-track { height: 7px; background: var(--gray-100); border-radius: 999px; overflow: hidden; }
+    .prog-fill  { height: 100%; border-radius: 999px; }
+
+    @media (max-width: 1100px) {
+      .dash-layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .charts-row { grid-template-columns: 1fr; }
+      .bottom-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 700px) {
+      .bottom-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dash-layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <div class="logo-icon">👥</div>
+      PeopleCore
+    </a>
+    <div class="sidebar-divider"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">Main</div>
+      <a href="dashboard.html" class="sidebar-link active"><span class="icon">🏠</span> Dashboard</a>
+      <a href="employees.html" class="sidebar-link"><span class="icon">👥</span> Employees <span class="count">248</span></a>
+      <a href="recruitment.html" class="sidebar-link"><span class="icon">📋</span> Recruitment <span class="count">34</span></a>
+
+      <div class="sidebar-section">HR Tools</div>
+      <a href="payroll.html" class="sidebar-link"><span class="icon">💰</span> Payroll</a>
+      <a href="leave.html" class="sidebar-link"><span class="icon">📅</span> Leave Management</a>
+      <a href="performance.html" class="sidebar-link"><span class="icon">🎯</span> Performance</a>
+      <a href="training.html" class="sidebar-link"><span class="icon">🎓</span> Training</a>
+
+      <div class="sidebar-section">Reports</div>
+      <a href="analytics.html" class="sidebar-link"><span class="icon">📊</span> Analytics</a>
+      <a href="analytics.html" class="sidebar-link"><span class="icon">📄</span> Reports</a>
+      <a href="notifications.html" class="sidebar-link"><span class="icon">🔔</span> Notifications <span class="count" style="background:#dc2626;">5</span></a>
+
+      <div class="sidebar-section">Admin</div>
+      <a href="settings.html" class="sidebar-link"><span class="icon">⚙️</span> Settings</a>
+      <a href="roles.html" class="sidebar-link"><span class="icon">🔒</span> Roles & Permissions</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="avatar">A</div>
+        <div>
+          <strong>Admin User</strong>
+          <span>HR Administrator</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="dash-main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h2>Good morning, Admin 👋</h2>
+        <p>Wednesday, September 16, 2026 · Here's what's happening today.</p>
+      </div>
+      <div class="topbar-right">
+        <a href="notifications.html" class="notif-btn" style="text-decoration:none;">
+          🔔 <div class="notif-badge">5</div>
+        </a>
+        <button class="btn btn-primary btn-sm" data-modal-open="quickAddModal">+ Quick Add</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-value" data-target="1248" data-suffix="">0</div>
+        <div class="kpi-label">Total Employees</div>
+        <div class="kpi-change up">▲ 12 this month</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-value">$2.4M</div>
+        <div class="kpi-label">Monthly Payroll</div>
+        <div class="kpi-change up">▲ 3.2% vs last month</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-value" data-target="34" data-suffix="">0</div>
+        <div class="kpi-label">Open Positions</div>
+        <div class="kpi-change up">▲ 5 new this week</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">⏱️</div>
+        <div class="kpi-value" data-target="96" data-suffix="%">0%</div>
+        <div class="kpi-label">Attendance Rate</div>
+        <div class="kpi-change up">▲ 2% vs last month</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🎯</div>
+        <div class="kpi-value" data-target="89" data-suffix="%">0%</div>
+        <div class="kpi-label">Goal Completion</div>
+        <div class="kpi-change down">▼ 3% vs last quarter</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🌟</div>
+        <div class="kpi-value">4.7</div>
+        <div class="kpi-label">Avg. Satisfaction Score</div>
+        <div class="kpi-change up">▲ 0.2 pts this quarter</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="charts-row">
+      <!-- Bar chart: Headcount by Month -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>Headcount Growth</h3>
+          <select class="filter-select" style="padding:.3rem .65rem;font-size:.8rem;">
+            <option>Last 8 Months</option><option>Last 12 Months</option>
+          </select>
+        </div>
+        <div class="bar-legend">
+          <div class="legend-pill"><div class="dot" style="background:var(--primary);"></div> New Hires</div>
+          <div class="legend-pill"><div class="dot" style="background:var(--secondary);"></div> Departures</div>
+        </div>
+        <div class="bar-chart-wrap" style="padding-top:.75rem;">
+          <div class="bar-chart-inner">
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:55%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:20%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">Feb</div>
+            </div>
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:65%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:15%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">Mar</div>
+            </div>
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:50%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:30%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">Apr</div>
+            </div>
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:80%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:18%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">May</div>
+            </div>
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:70%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:25%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">Jun</div>
+            </div>
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:90%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:12%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">Jul</div>
+            </div>
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:75%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:22%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">Aug</div>
+            </div>
+            <div class="bc-group">
+              <div style="display:flex;gap:3px;align-items:flex-end;height:150px;width:100%;">
+                <div class="bc-bar" style="flex:1;height:100%;background:var(--primary);"></div>
+                <div class="bc-bar" style="flex:1;height:10%;background:var(--secondary);"></div>
+              </div>
+              <div class="bc-label">Sep</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Donut: Dept breakdown -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>By Department</h3>
+        </div>
+        <div style="padding:0 1.25rem 1.25rem;">
+          <div class="donut-chart-wrap">
+            <div class="donut-svg-wrap">
+              <svg viewBox="0 0 42 42" fill="none">
+                <!-- Engineering 35% -->
+                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--primary)"
+                  stroke-width="6" stroke-dasharray="35 65" stroke-dashoffset="0" />
+                <!-- Design 18% -->
+                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--secondary)"
+                  stroke-width="6" stroke-dasharray="18 82" stroke-dashoffset="-35" />
+                <!-- Sales 22% -->
+                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--accent)"
+                  stroke-width="6" stroke-dasharray="22 78" stroke-dashoffset="-53" />
+                <!-- HR 10% -->
+                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--warning)"
+                  stroke-width="6" stroke-dasharray="10 90" stroke-dashoffset="-75" />
+                <!-- Other 15% -->
+                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--gray-300)"
+                  stroke-width="6" stroke-dasharray="15 85" stroke-dashoffset="-85" />
+              </svg>
+              <div class="donut-center">
+                <strong>248</strong>
+                <span>people</span>
+              </div>
+            </div>
+            <div class="donut-legend-grid">
+              <div class="donut-legend-item"><div class="dl-dot" style="background:var(--primary);"></div><span class="dl-name">Engineering</span><span class="dl-val">87</span></div>
+              <div class="donut-legend-item"><div class="dl-dot" style="background:var(--secondary);"></div><span class="dl-name">Design</span><span class="dl-val">45</span></div>
+              <div class="donut-legend-item"><div class="dl-dot" style="background:var(--accent);"></div><span class="dl-name">Sales</span><span class="dl-val">55</span></div>
+              <div class="donut-legend-item"><div class="dl-dot" style="background:var(--warning);"></div><span class="dl-name">HR</span><span class="dl-val">25</span></div>
+              <div class="donut-legend-item"><div class="dl-dot" style="background:var(--gray-300);"></div><span class="dl-name">Other</span><span class="dl-val">36</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div class="bottom-row">
+
+      <!-- Recent Activity -->
+      <div class="list-card">
+        <div class="list-card-head">
+          <h3>Recent Activity</h3>
+          <span class="badge badge-blue">Today</span>
+        </div>
+        <div class="list-item">
+          <div class="activity-dot" style="background:var(--success);"></div>
+          <div class="li-text">
+            <strong>Liu Wei joined Engineering</strong>
+            <span>New employee onboarded</span>
+          </div>
+          <div class="li-meta"><span>9:14 AM</span></div>
+        </div>
+        <div class="list-item">
+          <div class="activity-dot" style="background:var(--primary);"></div>
+          <div class="li-text">
+            <strong>Payroll processed</strong>
+            <span>$2.4M sent to 248 employees</span>
+          </div>
+          <div class="li-meta"><span>8:00 AM</span></div>
+        </div>
+        <div class="list-item">
+          <div class="activity-dot" style="background:var(--warning);"></div>
+          <div class="li-text">
+            <strong>Priya Nair — Leave approved</strong>
+            <span>Annual leave 16–27 Sep</span>
+          </div>
+          <div class="li-meta"><span>Yesterday</span></div>
+        </div>
+        <div class="list-item">
+          <div class="activity-dot" style="background:var(--accent);"></div>
+          <div class="li-text">
+            <strong>5 new applications</strong>
+            <span>Senior Frontend Engineer role</span>
+          </div>
+          <div class="li-meta"><span>Yesterday</span></div>
+        </div>
+        <div class="list-item">
+          <div class="activity-dot" style="background:var(--danger);"></div>
+          <div class="li-text">
+            <strong>Tom Henderson — review due</strong>
+            <span>Annual performance review</span>
+          </div>
+          <div class="li-meta"><span>2 days ago</span></div>
+        </div>
+      </div>
+
+      <!-- Upcoming Events -->
+      <div class="list-card">
+        <div class="list-card-head">
+          <h3>Upcoming Events</h3>
+          <a href="#" style="font-size:.8rem;color:var(--primary);font-weight:600;">View all</a>
+        </div>
+        <div class="list-item">
+          <div class="li-avatar" style="background:var(--primary);border-radius:10px;font-size:1rem;">📅</div>
+          <div class="li-text">
+            <strong>Team All-Hands</strong>
+            <span>Today · 2:00 PM · Zoom</span>
+          </div>
+          <div class="li-meta"><span class="badge badge-blue">Today</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-avatar" style="background:var(--success);border-radius:10px;font-size:1rem;">🎤</div>
+          <div class="li-text">
+            <strong>Interview: Chris Wong</strong>
+            <span>Thu, Sep 17 · 10:00 AM</span>
+          </div>
+          <div class="li-meta"><span class="badge badge-green">Interview</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-avatar" style="background:var(--warning);border-radius:10px;font-size:1rem;">💰</div>
+          <div class="li-text">
+            <strong>Q3 Payroll Review</strong>
+            <span>Fri, Sep 19 · 9:00 AM</span>
+          </div>
+          <div class="li-meta"><span class="badge badge-yellow">Finance</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-avatar" style="background:var(--accent);border-radius:10px;font-size:1rem;">🎓</div>
+          <div class="li-text">
+            <strong>Leadership Training</strong>
+            <span>Mon, Sep 22 · All Day</span>
+          </div>
+          <div class="li-meta"><span class="badge badge-purple">Training</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-avatar" style="background:var(--danger);border-radius:10px;font-size:1rem;">📝</div>
+          <div class="li-text">
+            <strong>Performance Review Deadline</strong>
+            <span>Sep 30 · End of Day</span>
+          </div>
+          <div class="li-meta"><span class="badge badge-red">Deadline</span></div>
+        </div>
+      </div>
+
+      <!-- Department Performance -->
+      <div class="list-card">
+        <div class="list-card-head">
+          <h3>Dept. Performance</h3>
+          <span class="badge badge-green">Q3 2026</span>
+        </div>
+        <div class="prog-item">
+          <div class="prog-row"><span>Engineering</span><span>94%</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:94%;background:var(--primary);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-row"><span>Design</span><span>88%</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:88%;background:var(--accent);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-row"><span>Sales</span><span>76%</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:76%;background:var(--secondary);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-row"><span>Marketing</span><span>82%</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:82%;background:var(--warning);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-row"><span>HR</span><span>91%</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:91%;background:var(--success);"></div></div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-row"><span>Finance</span><span>85%</span></div>
+          <div class="prog-track"><div class="prog-fill" style="width:85%;background:#f59e0b;"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- QUICK ADD MODAL -->
+<div class="modal-overlay" id="quickAddModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Quick Add</h3>
+      <button class="modal-close" data-modal-close="quickAddModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;">
+        <a href="employees.html" class="card card-body" style="text-align:center;text-decoration:none;cursor:pointer;" onclick="closeModal('quickAddModal')">
+          <div style="font-size:1.8rem;margin-bottom:.5rem;">👤</div>
+          <strong style="font-size:.9rem;color:var(--gray-900);">Add Employee</strong>
+        </a>
+        <a href="recruitment.html" class="card card-body" style="text-align:center;text-decoration:none;cursor:pointer;" onclick="closeModal('quickAddModal')">
+          <div style="font-size:1.8rem;margin-bottom:.5rem;">📋</div>
+          <strong style="font-size:.9rem;color:var(--gray-900);">Post a Job</strong>
+        </a>
+        <div class="card card-body" style="text-align:center;cursor:pointer;" onclick="closeModal('quickAddModal');showToast('Opening payroll…','info')">
+          <div style="font-size:1.8rem;margin-bottom:.5rem;">💰</div>
+          <strong style="font-size:.9rem;color:var(--gray-900);">Run Payroll</strong>
+        </div>
+        <div class="card card-body" style="text-align:center;cursor:pointer;" onclick="closeModal('quickAddModal');showToast('Leave request created','success')">
+          <div style="font-size:1.8rem;margin-bottom:.5rem;">📅</div>
+          <strong style="font-size:.9rem;color:var(--gray-900);">Log Leave</strong>
+        </div>
+        <div class="card card-body" style="text-align:center;cursor:pointer;" onclick="closeModal('quickAddModal');showToast('Performance review scheduled','success')">
+          <div style="font-size:1.8rem;margin-bottom:.5rem;">🎯</div>
+          <strong style="font-size:.9rem;color:var(--gray-900);">Start Review</strong>
+        </div>
+        <div class="card card-body" style="text-align:center;cursor:pointer;" onclick="closeModal('quickAddModal');showToast('Report generated','info')">
+          <div style="font-size:1.8rem;margin-bottom:.5rem;">📊</div>
+          <strong style="font-size:.9rem;color:var(--gray-900);">Run Report</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

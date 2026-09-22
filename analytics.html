@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analytics — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body{background:#f8fafc;}
+    .dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    .sidebar{background:var(--dark);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:1.25rem 1.25rem 0;display:flex;align-items:center;gap:.55rem;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:1rem;}
+    .sidebar-logo .logo-icon{width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:.5rem 1rem;}
+    .sidebar-nav{flex:1;padding:0 .75rem;}
+    .sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,.08);}
+    .user-chip{display:flex;align-items:center;gap:.65rem;padding:.6rem .5rem;border-radius:8px;}
+    .user-chip .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+    .user-chip strong{display:block;font-size:.85rem;color:#fff;line-height:1.2;}
+    .user-chip span{font-size:.75rem;color:rgba(255,255,255,.4);}
+    .dash-main{padding:2rem;overflow-y:auto;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1.25rem;margin-bottom:2rem;}
+    .kpi-card{background:#fff;border-radius:14px;padding:1.4rem;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+    .kpi-icon{font-size:1.4rem;margin-bottom:.4rem;}
+    .kpi-val{font-size:1.9rem;font-weight:800;color:var(--gray-900);line-height:1;}
+    .kpi-lbl{font-size:.82rem;color:var(--gray-500);}
+    .kpi-chg{font-size:.8rem;font-weight:600;margin-top:.3rem;}
+
+    .sc{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1.5rem;overflow:hidden;}
+    .sc-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--gray-100);}
+    .sc-head h3{margin:0;font-size:1rem;}
+    .sc-body{padding:1.5rem;}
+
+    /* Line chart (SVG) */
+    .chart-svg-wrap{overflow-x:auto;}
+    .chart-svg-wrap svg{display:block;}
+
+    /* Heatmap */
+    .heatmap{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;}
+    .hm-cell{height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;cursor:default;transition:transform .15s;}
+    .hm-cell:hover{transform:scale(1.1);}
+    .hm-label{font-size:.72rem;color:var(--gray-400);text-align:center;margin-top:2px;}
+
+    /* Funnel */
+    .funnel{display:flex;flex-direction:column;gap:.6rem;align-items:center;}
+    .funnel-step{border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;color:#fff;font-size:.88rem;font-weight:600;transition:width .4s;}
+    .funnel-label{font-size:.78rem;opacity:.85;}
+
+    /* Table toggle */
+    .range-tabs{display:flex;gap:.4rem;flex-wrap:wrap;}
+    .range-tab{padding:.3rem .85rem;border-radius:999px;font-size:.8rem;font-weight:600;border:1.5px solid var(--gray-300);background:#fff;cursor:pointer;transition:var(--transition);}
+    .range-tab.active,.range-tab:hover{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+    @media(max-width:1024px){.dash-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar-mount"></aside>
+  <main class="dash-main">
+    <div class="topbar">
+      <div><h2>📊 Analytics</h2><p style="margin:0;font-size:.88rem;color:var(--gray-500);">Workforce insights and HR metrics at a glance.</p></div>
+      <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+        <div class="range-tabs" id="rangeTabs">
+          <button class="range-tab active" data-range="3m">3M</button>
+          <button class="range-tab" data-range="6m">6M</button>
+          <button class="range-tab" data-range="1y">1Y</button>
+          <button class="range-tab" data-range="all">All</button>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="showToast('Analytics report exported','info')">⬇ Export PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Generating custom report…','info')">Custom Report</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-icon">👥</div><div class="kpi-val" data-target="1248">0</div><div class="kpi-lbl">Total Headcount</div><div class="kpi-chg" style="color:var(--success);">▲ 4.8% YoY</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📉</div><div class="kpi-val">8.2%</div><div class="kpi-lbl">Turnover Rate</div><div class="kpi-chg" style="color:var(--success);">▼ 1.4% vs last year</div></div>
+      <div class="kpi-card"><div class="kpi-icon">⏳</div><div class="kpi-val">28</div><div class="kpi-lbl">Avg Days to Hire</div><div class="kpi-chg" style="color:var(--danger);">▲ 3 days vs Q2</div></div>
+      <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-val">$97.4k</div><div class="kpi-lbl">Avg Salary</div><div class="kpi-chg" style="color:var(--success);">▲ 5.2% YoY</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🌟</div><div class="kpi-val">4.7</div><div class="kpi-lbl">eNPS Score</div><div class="kpi-chg" style="color:var(--success);">▲ 0.3 pts QoQ</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📅</div><div class="kpi-val">96%</div><div class="kpi-lbl">Attendance Rate</div><div class="kpi-chg" style="color:var(--success);">▲ 2% vs last month</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+      <!-- Headcount trend line chart -->
+      <div class="sc">
+        <div class="sc-head"><h3>Headcount Trend</h3><span class="badge badge-blue" id="rangeLabel">Last 3 Months</span></div>
+        <div class="sc-body">
+          <div class="chart-svg-wrap">
+            <svg id="lineChart" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gender diversity donut -->
+      <div class="sc">
+        <div class="sc-head"><h3>Gender Distribution</h3></div>
+        <div class="sc-body" style="display:flex;flex-direction:column;align-items:center;gap:1.25rem;">
+          <div style="position:relative;width:130px;height:130px;">
+            <svg viewBox="0 0 42 42" style="width:100%;height:100%;transform:rotate(-90deg);">
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--primary)" stroke-width="6" stroke-dasharray="57 43"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#ec4899" stroke-width="6" stroke-dasharray="37 63" stroke-dashoffset="-57"/>
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="var(--gray-300)" stroke-width="6" stroke-dasharray="6 94" stroke-dashoffset="-94"/>
+            </svg>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+              <strong style="font-size:1.2rem;font-weight:800;display:block;">248</strong>
+              <span style="font-size:.68rem;color:var(--gray-500);">total</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;width:100%;">
+            <div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;"><div style="width:10px;height:10px;border-radius:3px;background:var(--primary);"></div><span>Male</span><strong style="margin-left:auto;">141 (57%)</strong></div>
+            <div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;"><div style="width:10px;height:10px;border-radius:3px;background:#ec4899;"></div><span>Female</span><strong style="margin-left:auto;">92 (37%)</strong></div>
+            <div style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;"><div style="width:10px;height:10px;border-radius:3px;background:var(--gray-300);"></div><span>Other</span><strong style="margin-left:auto;">15 (6%)</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+      <!-- Hiring funnel -->
+      <div class="sc">
+        <div class="sc-head"><h3>Hiring Funnel — Sep 2026</h3></div>
+        <div class="sc-body">
+          <div class="funnel" id="funnelChart"></div>
+        </div>
+      </div>
+
+      <!-- Turnover by dept -->
+      <div class="sc">
+        <div class="sc-head"><h3>Turnover by Department</h3><span style="font-size:.8rem;color:var(--gray-500);">YTD 2026</span></div>
+        <div class="sc-body" id="turnoverChart"></div>
+      </div>
+    </div>
+
+    <!-- Attendance heatmap -->
+    <div class="sc">
+      <div class="sc-head"><h3>Attendance Heatmap — 2026</h3><div style="display:flex;align-items:center;gap:.75rem;font-size:.78rem;color:var(--gray-500);">
+        <span><span style="display:inline-block;width:10px;height:10px;background:#dbeafe;border-radius:2px;"></span> Low</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#2563eb;border-radius:2px;"></span> High</span>
+      </div></div>
+      <div class="sc-body">
+        <div class="heatmap" id="heatmap"></div>
+        <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:4px;" id="heatmapLabels"></div>
+      </div>
+    </div>
+
+    <!-- Age distribution -->
+    <div class="sc">
+      <div class="sc-head"><h3>Age Distribution</h3></div>
+      <div class="sc-body">
+        <div style="display:flex;align-items:flex-end;gap:.75rem;height:140px;" id="ageChart"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="app.js"></script>
+<script src="sidebar.js"></script>
+<script>
+// Range tabs
+document.querySelectorAll('.range-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.range-tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const labels={'3m':'Last 3 Months','6m':'Last 6 Months','1y':'Last 12 Months','all':'All Time'};
+    document.getElementById('rangeLabel').textContent=labels[t.dataset.range];
+    drawLineChart(t.dataset.range);
+    showToast('Chart updated','info');
+  });
+});
+
+// Line chart
+function drawLineChart(range){
+  const datasets={
+    '3m':{labels:['Jul','Aug','Sep'],values:[1198,1224,1248]},
+    '6m':{labels:['Apr','May','Jun','Jul','Aug','Sep'],values:[1150,1162,1178,1198,1224,1248]},
+    '1y':{labels:['Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],values:[1080,1092,1100,1115,1130,1142,1150,1162,1178,1198,1224,1248]},
+    'all':{labels:['2022','2023','Q1\'24','Q2\'24','Q3\'24','Q4\'24','Q1\'25','Q2\'25','Q3\'25','Q4\'25','Q1\'26','Sep\'26'],values:[740,880,940,970,1010,1040,1080,1120,1160,1200,1230,1248]},
+  };
+  const d=datasets[range];
+  const svg=document.getElementById('lineChart');
+  const W=600,H=160,pad=40;
+  const min=Math.min(...d.values)-20, max=Math.max(...d.values)+10;
+  const xStep=(W-pad*2)/(d.labels.length-1);
+  const yScale=v=>H-pad-((v-min)/(max-min))*(H-pad*1.5);
+  const pts=d.values.map((v,i)=>({x:pad+i*xStep,y:yScale(v)}));
+  const path=pts.map((p,i)=>i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
+  const areaPath=`${path} L${pts[pts.length-1].x},${H-pad} L${pts[0].x},${H-pad} Z`;
+  const ticks=[min, min+Math.round((max-min)/2), max].map((v,i)=>{
+    const y=yScale(v);
+    return `<line x1="${pad}" y1="${y}" x2="${W-10}" y2="${y}" stroke="#f1f5f9" stroke-width="1"/>
+            <text x="${pad-6}" y="${y+4}" font-size="10" fill="#94a3b8" text-anchor="end">${Math.round(v)}</text>`;
+  }).join('');
+  const xlabels=d.labels.map((l,i)=>`<text x="${pad+i*xStep}" y="${H-pad+18}" font-size="10" fill="#94a3b8" text-anchor="middle">${l}</text>`).join('');
+  const dots=pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--primary)" stroke="#fff" stroke-width="2"/>`).join('');
+  svg.innerHTML=`
+    ${ticks}${xlabels}
+    <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2563eb" stop-opacity=".15"/><stop offset="100%" stop-color="#2563eb" stop-opacity="0"/></linearGradient></defs>
+    <path d="${areaPath}" fill="url(#ag)"/>
+    <path d="${path}" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round"/>
+    ${dots}`;
+}
+drawLineChart('3m');
+
+// Hiring funnel
+const funnelData=[
+  {label:'Applications',n:218,color:'#2563eb'},
+  {label:'Screened',    n:124,color:'#0ea5e9'},
+  {label:'Interviewed', n:61, color:'#7c3aed'},
+  {label:'Offered',     n:18, color:'#d97706'},
+  {label:'Hired',       n:12, color:'#16a34a'},
+];
+const fc=document.getElementById('funnelChart');
+funnelData.forEach((s,i)=>{
+  const pct=55+i*(-8);
+  fc.innerHTML+=`<div class="funnel-step" style="width:${pct}%;background:${s.color};">
+    <span class="funnel-label">${s.label}</span><strong>${s.n}</strong>
+  </div>`;
+});
+
+// Turnover chart
+const turnover=[
+  {dept:'Sales',     pct:14,color:'#dc2626'},
+  {dept:'Marketing', pct:11,color:'#d97706'},
+  {dept:'Design',    pct:9, color:'#7c3aed'},
+  {dept:'Engineering',pct:6,color:'#2563eb'},
+  {dept:'HR',        pct:5, color:'#0ea5e9'},
+  {dept:'Finance',   pct:4, color:'#16a34a'},
+];
+const tc2=document.getElementById('turnoverChart');
+turnover.forEach(t=>{
+  tc2.innerHTML+=`<div style="margin-bottom:.75rem;">
+    <div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:600;margin-bottom:.3rem;">
+      <span>${t.dept}</span><span>${t.pct}%</span>
+    </div>
+    <div style="height:8px;background:var(--gray-100);border-radius:999px;overflow:hidden;">
+      <div style="width:${t.pct*4}%;height:100%;background:${t.color};border-radius:999px;"></div>
+    </div>
+  </div>`;
+});
+
+// Heatmap
+const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const attData=[91,89,95,96,94,97,96,93,96,null,null,null];
+const hm=document.getElementById('heatmap');
+const hl=document.getElementById('heatmapLabels');
+months.forEach((m,i)=>{
+  const v=attData[i];
+  const opacity=v?0.2+(v-88)/12:0;
+  const bg=v?`rgba(37,99,235,${opacity.toFixed(2)})`:'var(--gray-100)';
+  const tc=v&&v>95?'#fff':v?'#1e3a8a':'var(--gray-300)';
+  hm.innerHTML+=`<div class="hm-cell" style="background:${bg};color:${tc};" title="${m}: ${v||'N/A'}%">${v?v+'%':'—'}</div>`;
+  hl.innerHTML+=`<div class="hm-label">${m}</div>`;
+});
+
+// Age distribution
+const ageBands=[
+  {label:'18–24',n:28,color:'#0ea5e9'},
+  {label:'25–34',n:92,color:'#2563eb'},
+  {label:'35–44',n:74,color:'#7c3aed'},
+  {label:'45–54',n:38,color:'#d97706'},
+  {label:'55–64',n:14,color:'#dc2626'},
+  {label:'65+',  n:2, color:'#94a3b8'},
+];
+const maxN=Math.max(...ageBands.map(a=>a.n));
+const ac=document.getElementById('ageChart');
+ageBands.forEach(a=>{
+  const h=Math.round((a.n/maxN)*120);
+  ac.innerHTML+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;">
+    <span style="font-size:.75rem;font-weight:700;color:var(--gray-700);">${a.n}</span>
+    <div style="width:100%;height:${h}px;background:${a.color};border-radius:6px 6px 0 0;"></div>
+    <span style="font-size:.72rem;color:var(--gray-500);">${a.label}</span>
+  </div>`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leave Management — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body{background:#f8fafc;}
+    .dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    .sidebar{background:var(--dark);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:1.25rem 1.25rem 0;display:flex;align-items:center;gap:.55rem;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:1rem;}
+    .sidebar-logo .logo-icon{width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:.5rem 1rem;}
+    .sidebar-nav{flex:1;padding:0 .75rem;}
+    .sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,.08);}
+    .user-chip{display:flex;align-items:center;gap:.65rem;padding:.6rem .5rem;border-radius:8px;}
+    .user-chip .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+    .user-chip strong{display:block;font-size:.85rem;color:#fff;line-height:1.2;}
+    .user-chip span{font-size:.75rem;color:rgba(255,255,255,.4);}
+    .dash-main{padding:2rem;overflow-y:auto;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem;margin-bottom:2rem;}
+    .kpi-card{background:#fff;border-radius:14px;padding:1.4rem;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+    .kpi-card .icon{font-size:1.4rem;margin-bottom:.4rem;}
+    .kpi-card strong{display:block;font-size:1.9rem;font-weight:800;line-height:1;}
+    .kpi-card span{font-size:.82rem;color:var(--gray-500);}
+
+    .sc{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1.5rem;overflow:hidden;}
+    .sc-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--gray-100);}
+    .sc-head h3{margin:0;font-size:1rem;}
+    .sc-body{padding:1.5rem;}
+
+    /* Calendar */
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+    .cal-day-hdr{text-align:center;font-size:.72rem;font-weight:700;color:var(--gray-400);text-transform:uppercase;padding:.4rem 0;}
+    .cal-day{min-height:52px;border-radius:8px;padding:.35rem .4rem;font-size:.78rem;font-weight:600;color:var(--gray-700);background:var(--gray-100);position:relative;}
+    .cal-day.today{background:var(--primary);color:#fff;}
+    .cal-day.empty{background:transparent;}
+    .cal-event{display:block;border-radius:4px;padding:.1rem .35rem;font-size:.68rem;font-weight:600;margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    .leave-bal-row{display:flex;align-items:center;gap:1rem;padding:.85rem 0;border-bottom:1px solid var(--gray-100);}
+    .leave-bal-row:last-child{border-bottom:none;}
+    .leave-bal-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+    .leave-bal-name{flex:1;font-size:.9rem;font-weight:600;color:var(--gray-800);}
+    .leave-bal-track{flex:2;height:8px;background:var(--gray-100);border-radius:999px;overflow:hidden;}
+    .leave-bal-fill{height:100%;border-radius:999px;}
+    .leave-bal-nums{font-size:.82rem;font-weight:700;color:var(--gray-700);min-width:60px;text-align:right;}
+
+    .req-row{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--gray-100);transition:background .2s;}
+    .req-row:hover{background:var(--gray-100);}
+    .req-row:last-child{border-bottom:none;}
+    .req-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:#fff;flex-shrink:0;}
+    .req-info strong{display:block;font-size:.88rem;color:var(--gray-900);}
+    .req-info span{font-size:.78rem;color:var(--gray-500);}
+    .req-actions{margin-left:auto;display:flex;gap:.4rem;}
+
+    @media(max-width:1024px){.dash-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar-mount"></aside>
+
+  <main class="dash-main">
+    <div class="topbar">
+      <div>
+        <h2>📅 Leave Management</h2>
+        <p>Approve requests, track balances, and manage team leave schedules.</p>
+      </div>
+      <div style="display:flex;gap:.75rem;">
+        <button class="btn btn-outline btn-sm" onclick="showToast('Leave report exported','info')">⬇ Export</button>
+        <button class="btn btn-primary" data-modal-open="newLeaveModal">+ New Request</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="icon">🏖️</div><strong>12</strong><span>Currently on Leave</span></div>
+      <div class="kpi-card"><div class="icon">⏳</div><strong style="color:var(--warning);">8</strong><span>Pending Approval</span></div>
+      <div class="kpi-card"><div class="icon">✅</div><strong style="color:var(--success);">47</strong><span>Approved This Month</span></div>
+      <div class="kpi-card"><div class="icon">❌</div><strong style="color:var(--danger);">3</strong><span>Rejected This Month</span></div>
+      <div class="kpi-card"><div class="icon">📊</div><strong>4.2</strong><span>Avg Days Per Request</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+      <!-- Calendar -->
+      <div class="sc">
+        <div class="sc-head">
+          <h3>📆 September 2026 — Leave Calendar</h3>
+          <div style="display:flex;gap:.5rem;">
+            <button class="btn btn-outline btn-sm" onclick="showToast('Previous month','info')">‹</button>
+            <button class="btn btn-outline btn-sm" onclick="showToast('Next month','info')">›</button>
+          </div>
+        </div>
+        <div class="sc-body">
+          <div class="cal-grid" id="calGrid"></div>
+          <div style="display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap;font-size:.78rem;">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#dbeafe;margin-right:4px;"></span>Annual Leave</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#fee2e2;margin-right:4px;"></span>Sick Leave</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#dcfce7;margin-right:4px;"></span>Work From Home</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#ede9fe;margin-right:4px;"></span>Maternity/Paternity</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leave Balances -->
+      <div class="sc">
+        <div class="sc-head"><h3>My Leave Balances</h3></div>
+        <div class="sc-body" style="padding:1rem 1.25rem;">
+          <div class="leave-bal-row">
+            <div class="leave-bal-icon" style="background:#dbeafe;">🏖️</div>
+            <span class="leave-bal-name">Annual Leave</span>
+            <div class="leave-bal-track"><div class="leave-bal-fill" style="width:60%;background:var(--primary);"></div></div>
+            <span class="leave-bal-nums">15 / 25</span>
+          </div>
+          <div class="leave-bal-row">
+            <div class="leave-bal-icon" style="background:#fee2e2;">🤒</div>
+            <span class="leave-bal-name">Sick Leave</span>
+            <div class="leave-bal-track"><div class="leave-bal-fill" style="width:80%;background:var(--danger);"></div></div>
+            <span class="leave-bal-nums">8 / 10</span>
+          </div>
+          <div class="leave-bal-row">
+            <div class="leave-bal-icon" style="background:#dcfce7;">🏠</div>
+            <span class="leave-bal-name">Work From Home</span>
+            <div class="leave-bal-track"><div class="leave-bal-fill" style="width:40%;background:var(--success);"></div></div>
+            <span class="leave-bal-nums">8 / 20</span>
+          </div>
+          <div class="leave-bal-row">
+            <div class="leave-bal-icon" style="background:#ede9fe;">👶</div>
+            <span class="leave-bal-name">Parental Leave</span>
+            <div class="leave-bal-track"><div class="leave-bal-fill" style="width:0%;background:var(--accent);"></div></div>
+            <span class="leave-bal-nums">0 / 90</span>
+          </div>
+          <div class="leave-bal-row">
+            <div class="leave-bal-icon" style="background:#fef3c7;">📚</div>
+            <span class="leave-bal-name">Study Leave</span>
+            <div class="leave-bal-track"><div class="leave-bal-fill" style="width:50%;background:var(--warning);"></div></div>
+            <span class="leave-bal-nums">5 / 10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Requests -->
+    <div class="sc" style="margin-bottom:1.5rem;">
+      <div class="sc-head">
+        <h3>⏳ Pending Approvals</h3>
+        <span class="badge badge-yellow">8 pending</span>
+      </div>
+      <div id="pendingList"></div>
+    </div>
+
+    <!-- All Requests Table -->
+    <div class="sc">
+      <div class="sc-head">
+        <h3>All Leave Requests</h3>
+        <div style="display:flex;gap:.75rem;align-items:center;">
+          <select class="filter-select" style="padding:.35rem .7rem;font-size:.85rem;" id="leaveTypeFilter">
+            <option value="">All Types</option>
+            <option>Annual Leave</option><option>Sick Leave</option>
+            <option>Work From Home</option><option>Parental Leave</option>
+          </select>
+          <select class="filter-select" style="padding:.35rem .7rem;font-size:.85rem;" id="leaveStatusFilter">
+            <option value="">All Statuses</option>
+            <option>Approved</option><option>Pending</option><option>Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="leaveTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- New Leave Request Modal -->
+<div class="modal-overlay" id="newLeaveModal">
+  <div class="modal">
+    <div class="modal-header"><h3>New Leave Request</h3><button class="modal-close" data-modal-close="newLeaveModal">✕</button></div>
+    <div class="modal-body">
+      <form id="leaveForm">
+        <div class="form-group"><label class="form-label">Employee</label>
+          <select class="form-control" name="employee">
+            <option>Sarah Mitchell</option><option>James Okafor</option><option>Carlos Rivera</option><option>Elena Vasquez</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">Leave Type</label>
+          <select class="form-control" name="type">
+            <option>Annual Leave</option><option>Sick Leave</option><option>Work From Home</option><option>Parental Leave</option><option>Study Leave</option>
+          </select></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">From Date</label><input type="date" class="form-control" name="from" required/></div>
+          <div class="form-group"><label class="form-label">To Date</label><input type="date" class="form-control" name="to" required/></div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason</label>
+          <textarea class="form-control" name="reason" rows="3" placeholder="Brief reason for leave request…"></textarea></div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:1rem;">
+          <button type="button" class="btn btn-outline" data-modal-close="newLeaveModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="sidebar.js"></script>
+<script>
+// Build September 2026 calendar
+const events = {
+  16:[{text:'Priya - Annual',color:'#dbeafe',tc:'#1d4ed8'}],
+  17:[{text:'Priya - Annual',color:'#dbeafe',tc:'#1d4ed8'},{text:'Omar - WFH',color:'#dcfce7',tc:'#15803d'}],
+  18:[{text:'Priya - Annual',color:'#dbeafe',tc:'#1d4ed8'}],
+  19:[{text:'Nina - Sick',color:'#fee2e2',tc:'#b91c1c'}],
+  22:[{text:'Priya - Annual',color:'#dbeafe',tc:'#1d4ed8'},{text:'Ben - WFH',color:'#dcfce7',tc:'#15803d'}],
+  23:[{text:'Layla - Maternity',color:'#ede9fe',tc:'#6d28d9'}],
+  24:[{text:'Layla - Maternity',color:'#ede9fe',tc:'#6d28d9'}],
+  25:[{text:'Tom - Annual',color:'#dbeafe',tc:'#1d4ed8'}],
+  26:[{text:'Tom - Annual',color:'#dbeafe',tc:'#1d4ed8'}],
+};
+const grid = document.getElementById('calGrid');
+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+  grid.innerHTML += `<div class="cal-day-hdr">${d}</div>`;
+});
+// Sep 1 2026 = Tuesday (day index 2)
+for(let i=0;i<2;i++) grid.innerHTML += `<div class="cal-day empty"></div>`;
+for(let d=1;d<=30;d++){
+  const isToday = d===16;
+  let evHtml = (events[d]||[]).map(e=>`<span class="cal-event" style="background:${e.color};color:${e.tc};">${e.text}</span>`).join('');
+  grid.innerHTML += `<div class="cal-day${isToday?' today':''}">${d}${evHtml}</div>`;
+}
+
+// Pending requests
+const pending = [
+  {name:'Omar Hassan',     init:'OH', color:'#7c3aed', type:'Work From Home',   dates:'Sep 17, 2026',        days:1},
+  {name:'Nina Petrov',     init:'NP', color:'#dc2626', type:'Sick Leave',        dates:'Sep 19, 2026',        days:1},
+  {name:'Ben Carter',      init:'BC', color:'#16a34a', type:'Work From Home',   dates:'Sep 22, 2026',        days:1},
+  {name:'Layla Mansour',   init:'LM', color:'#6d28d9', type:'Maternity Leave',  dates:'Sep 23 – Oct 20',     days:20},
+  {name:'Chris Wong',      init:'CW', color:'#0ea5e9', type:'Annual Leave',     dates:'Oct 1–5, 2026',       days:5},
+  {name:'Rachel Kim',      init:'RK', color:'#d97706', type:'Study Leave',      dates:'Oct 8–10, 2026',      days:3},
+  {name:'David Lowe',      init:'DL', color:'#2563eb', type:'Annual Leave',     dates:'Oct 12–16, 2026',     days:5},
+  {name:'Fatima Al-Amin',  init:'FA', color:'#0f766e', type:'Sick Leave',       dates:'Sep 16, 2026',        days:1},
+];
+const pl = document.getElementById('pendingList');
+pending.forEach((r,i)=>{
+  pl.innerHTML += `<div class="req-row">
+    <div class="req-avatar" style="background:${r.color};">${r.init}</div>
+    <div class="req-info">
+      <strong>${r.name}</strong>
+      <span>${r.type} · ${r.dates} · ${r.days} day${r.days>1?'s':''}</span>
+    </div>
+    <div class="req-actions">
+      <button class="btn btn-sm" style="background:#dcfce7;color:var(--success);" onclick="approveLeave(this,'${r.name}')">✓ Approve</button>
+      <button class="btn btn-sm" style="background:#fee2e2;color:var(--danger);" onclick="rejectLeave(this,'${r.name}')">✕ Reject</button>
+    </div>
+  </div>`;
+});
+
+function approveLeave(btn, name){
+  btn.closest('.req-row').style.background='#f0fdf4';
+  btn.closest('.req-actions').innerHTML='<span class="badge badge-green">Approved</span>';
+  showToast(`${name}'s leave approved!`,'success');
+}
+function rejectLeave(btn, name){
+  btn.closest('.req-row').style.opacity='.5';
+  btn.closest('.req-actions').innerHTML='<span class="badge badge-red">Rejected</span>';
+  showToast(`${name}'s leave rejected`,'error');
+}
+
+// All requests table
+const allLeave = [
+  {name:'Priya Nair',    type:'Annual Leave',   from:'Sep 16',to:'Sep 27',days:10,reason:'Family vacation',   status:'Approved'},
+  {name:'Layla Mansour', type:'Maternity Leave',from:'Sep 23',to:'Oct 20', days:20,reason:'Maternity leave',   status:'Pending'},
+  {name:'Tom Henderson', type:'Annual Leave',   from:'Sep 25',to:'Sep 26', days:2, reason:'Personal',          status:'Approved'},
+  {name:'Nina Petrov',   type:'Sick Leave',     from:'Sep 19',to:'Sep 19', days:1, reason:'Illness',           status:'Pending'},
+  {name:'Ana Costa',     type:'Annual Leave',   from:'Aug 18',to:'Aug 22', days:5, reason:'Holiday',           status:'Approved'},
+  {name:'Jake Morris',   type:'Sick Leave',     from:'Aug 5', to:'Aug 6',  days:2, reason:'Medical',           status:'Approved'},
+  {name:'Mei Lin',       type:'Study Leave',    from:'Jul 14',to:'Jul 16', days:3, reason:'Certification exam',status:'Rejected'},
+];
+const tbody = document.getElementById('leaveTableBody');
+function renderLeaveTable(data){
+  tbody.innerHTML = data.map(r=>{
+    const init = r.name.split(' ').map(n=>n[0]).join('');
+    const sc = r.status==='Approved'?'badge-green':r.status==='Pending'?'badge-yellow':'badge-red';
+    return `<tr>
+      <td><div class="employee-info">
+        <div class="employee-avatar" style="background:linear-gradient(135deg,var(--primary),var(--accent));">${init}</div>
+        <span class="employee-name">${r.name}</span>
+      </div></td>
+      <td>${r.type}</td><td>${r.from}</td><td>${r.to}</td><td>${r.days}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.reason}</td>
+      <td><span class="badge ${sc}">${r.status}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="showToast('Details opened','info')">View</button></td>
+    </tr>`;
+  }).join('');
+}
+renderLeaveTable(allLeave);
+document.getElementById('leaveTypeFilter').addEventListener('change',function(){ filterLeave(); });
+document.getElementById('leaveStatusFilter').addEventListener('change',function(){ filterLeave(); });
+function filterLeave(){
+  const t=document.getElementById('leaveTypeFilter').value;
+  const s=document.getElementById('leaveStatusFilter').value;
+  renderLeaveTable(allLeave.filter(r=>(t===''||r.type===t)&&(s===''||r.status===s)));
+}
+
+// Leave form
+document.getElementById('leaveForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  closeModal('newLeaveModal');
+  this.reset();
+  showToast('Leave request submitted successfully!','success');
+});
+</script>
+</body>
+</html>

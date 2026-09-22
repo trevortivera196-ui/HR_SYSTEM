@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body{background:#f8fafc;}
+    .dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    .sidebar{background:var(--dark);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:1.25rem 1.25rem 0;display:flex;align-items:center;gap:.55rem;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:1rem;}
+    .sidebar-logo .logo-icon{width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:.5rem 1rem;}
+    .sidebar-nav{flex:1;padding:0 .75rem;}
+    .sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,.08);}
+    .user-chip{display:flex;align-items:center;gap:.65rem;padding:.6rem .5rem;border-radius:8px;}
+    .user-chip .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+    .user-chip strong{display:block;font-size:.85rem;color:#fff;line-height:1.2;}
+    .user-chip span{font-size:.75rem;color:rgba(255,255,255,.4);}
+    .dash-main{padding:2rem;overflow-y:auto;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+
+    .settings-layout{display:grid;grid-template-columns:220px 1fr;gap:1.5rem;align-items:start;}
+    .settings-nav{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;position:sticky;top:1rem;}
+    .settings-nav-item{display:flex;align-items:center;gap:.65rem;padding:.75rem 1.1rem;font-size:.88rem;font-weight:500;color:var(--gray-600);cursor:pointer;border-left:3px solid transparent;transition:var(--transition);}
+    .settings-nav-item:hover,.settings-nav-item.active{background:#eff6ff;color:var(--primary);border-left-color:var(--primary);}
+    .settings-nav-item .icon{font-size:1rem;flex-shrink:0;}
+    .settings-nav-section{padding:.6rem 1rem .2rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);}
+
+    .sc{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1.5rem;overflow:hidden;}
+    .sc-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--gray-100);}
+    .sc-head h3{margin:0;font-size:1rem;}
+    .sc-body{padding:1.5rem;}
+
+    .setting-row{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;border-bottom:1px solid var(--gray-100);}
+    .setting-row:last-child{border-bottom:none;}
+    .setting-info{flex:1;padding-right:2rem;}
+    .setting-info strong{display:block;font-size:.9rem;color:var(--gray-900);margin-bottom:.2rem;}
+    .setting-info span{font-size:.8rem;color:var(--gray-500);line-height:1.5;}
+    .setting-control{flex-shrink:0;}
+
+    /* Toggle */
+    .toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:var(--gray-300);border-radius:999px;cursor:pointer;transition:.3s;}
+    .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;}
+    .toggle input:checked+.toggle-slider{background:var(--primary);}
+    .toggle input:checked+.toggle-slider::before{transform:translateX(18px);}
+
+    .panel{display:none;}
+    .panel.active{display:block;}
+
+    .integration-card{border:1.5px solid var(--gray-100);border-radius:12px;padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:border-color .2s;}
+    .integration-card:hover{border-color:var(--primary);}
+    .integration-logo{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+    .integration-name{font-weight:700;font-size:.95rem;margin-bottom:.2rem;}
+    .integration-desc{font-size:.8rem;color:var(--gray-500);}
+
+    .danger-zone{border:1.5px solid var(--danger);border-radius:14px;padding:1.5rem;}
+    .danger-action{display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid #fee2e2;}
+    .danger-action:last-child{border-bottom:none;}
+    .danger-action strong{display:block;font-size:.9rem;color:var(--gray-900);}
+    .danger-action span{font-size:.8rem;color:var(--gray-500);}
+
+    @media(max-width:1024px){.dash-layout{grid-template-columns:1fr;}.sidebar{display:none;}.settings-layout{grid-template-columns:1fr;}.settings-nav{position:relative;}}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar-mount"></aside>
+  <main class="dash-main">
+    <div class="topbar">
+      <div>
+        <h2>⚙️ Settings</h2>
+        <p style="margin:0;font-size:.88rem;color:var(--gray-500);">Configure your workspace, preferences, and integrations.</p>
+      </div>
+      <button class="btn btn-primary" id="saveAllBtn">💾 Save All Changes</button>
+    </div>
+
+    <div class="settings-layout">
+      <!-- Sidebar nav -->
+      <div class="settings-nav">
+        <div class="settings-nav-section">General</div>
+        <div class="settings-nav-item active" data-panel="company"><span class="icon">🏢</span> Company</div>
+        <div class="settings-nav-item" data-panel="profile"><span class="icon">👤</span> My Profile</div>
+        <div class="settings-nav-item" data-panel="appearance"><span class="icon">🎨</span> Appearance</div>
+        <div class="settings-nav-section">HR Configuration</div>
+        <div class="settings-nav-item" data-panel="payroll-s"><span class="icon">💰</span> Payroll</div>
+        <div class="settings-nav-item" data-panel="leave-s"><span class="icon">📅</span> Leave Policies</div>
+        <div class="settings-nav-item" data-panel="perf-s"><span class="icon">🎯</span> Performance</div>
+        <div class="settings-nav-section">System</div>
+        <div class="settings-nav-item" data-panel="integrations"><span class="icon">🔌</span> Integrations</div>
+        <div class="settings-nav-item" data-panel="security"><span class="icon">🔒</span> Security</div>
+        <div class="settings-nav-item" data-panel="billing"><span class="icon">💳</span> Billing</div>
+        <div class="settings-nav-item" data-panel="danger"><span class="icon">⚠️</span> Danger Zone</div>
+      </div>
+
+      <!-- Panels -->
+      <div>
+        <!-- COMPANY -->
+        <div class="panel active" id="panel-company">
+          <div class="sc">
+            <div class="sc-head"><h3>Company Information</h3></div>
+            <div class="sc-body">
+              <form id="companyForm">
+                <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;">
+                  <div style="width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;flex-shrink:0;">👥</div>
+                  <div>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="showToast('File picker opened','info')">Change Logo</button>
+                    <p style="font-size:.78rem;color:var(--gray-400);margin:.3rem 0 0;">PNG, JPG up to 2MB · Recommended: 200×200px</p>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Company Name</label><input class="form-control" value="PeopleCore Inc." name="companyName"/></div>
+                  <div class="form-group"><label class="form-label">Legal Entity Name</label><input class="form-control" value="PeopleCore Technologies LLC" name="legal"/></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Industry</label>
+                    <select class="form-control" name="industry"><option selected>HR Software / SaaS</option><option>Technology</option><option>Finance</option><option>Healthcare</option></select></div>
+                  <div class="form-group"><label class="form-label">Company Size</label>
+                    <select class="form-control" name="size"><option>201–500</option><option>1–50</option><option>51–200</option><option>501–1000</option></select></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Primary Email</label><input type="email" class="form-control" value="hr@peoplecore.io" name="email"/></div>
+                  <div class="form-group"><label class="form-label">Phone</label><input class="form-control" value="+1 (415) 555-0192" name="phone"/></div>
+                </div>
+                <div class="form-group"><label class="form-label">Headquarters Address</label><input class="form-control" value="123 Market St, San Francisco, CA 94105" name="address"/></div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Timezone</label>
+                    <select class="form-control" name="tz"><option selected>America/Los_Angeles (PST)</option><option>America/New_York (EST)</option><option>Europe/London (GMT)</option></select></div>
+                  <div class="form-group"><label class="form-label">Fiscal Year Start</label>
+                    <select class="form-control" name="fiscal"><option selected>January 1</option><option>April 1</option><option>July 1</option></select></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Company Settings</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="panel" id="panel-profile">
+          <div class="sc">
+            <div class="sc-head"><h3>My Profile</h3></div>
+            <div class="sc-body">
+              <form id="profileForm">
+                <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;">
+                  <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;flex-shrink:0;">A</div>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="showToast('File picker opened','info')">Change Photo</button>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">First Name</label><input class="form-control" value="Admin" name="fname"/></div>
+                  <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" value="User" name="lname"/></div>
+                </div>
+                <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-control" value="admin@peoplecore.io" name="email"/></div>
+                <div class="form-group"><label class="form-label">Job Title</label><input class="form-control" value="HR Administrator" name="title"/></div>
+                <div class="form-group"><label class="form-label">Phone</label><input class="form-control" value="+1 (415) 555-0100" name="phone"/></div>
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+              </form>
+            </div>
+          </div>
+          <div class="sc">
+            <div class="sc-head"><h3>Change Password</h3></div>
+            <div class="sc-body">
+              <form id="pwForm">
+                <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" placeholder="••••••••" name="current"/></div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" placeholder="••••••••" name="new"/></div>
+                  <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-control" placeholder="••••••••" name="confirm"/></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Password</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- APPEARANCE -->
+        <div class="panel" id="panel-appearance">
+          <div class="sc">
+            <div class="sc-head"><h3>Appearance</h3></div>
+            <div class="sc-body">
+              <div class="setting-row">
+                <div class="setting-info"><strong>Theme</strong><span>Choose your preferred colour scheme.</span></div>
+                <select class="filter-select" onchange="showToast('Theme changed to '+this.value,'info')">
+                  <option>Light</option><option>Dark</option><option>System Default</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info"><strong>Accent Colour</strong><span>Primary colour used throughout the UI.</span></div>
+                <input type="color" value="#2563eb" style="width:40px;height:32px;border:none;border-radius:8px;cursor:pointer;background:none;" onchange="document.documentElement.style.setProperty('--primary',this.value);showToast('Accent colour updated','success')"/>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info"><strong>Compact Mode</strong><span>Reduce spacing for more content on screen.</span></div>
+                <label class="toggle"><input type="checkbox" onchange="showToast('Compact mode '+(this.checked?'on':'off'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info"><strong>Sidebar Collapsed by Default</strong><span>Start with the sidebar minimised.</span></div>
+                <label class="toggle"><input type="checkbox" onchange="showToast('Sidebar preference saved','info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row" style="border-bottom:none;">
+                <div class="setting-info"><strong>Language</strong><span>Interface display language.</span></div>
+                <select class="filter-select" onchange="showToast('Language set to '+this.value,'info')">
+                  <option>English (US)</option><option>English (UK)</option><option>French</option><option>German</option><option>Spanish</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYROLL SETTINGS -->
+        <div class="panel" id="panel-payroll-s">
+          <div class="sc">
+            <div class="sc-head"><h3>Payroll Configuration</h3></div>
+            <div class="sc-body">
+              <form id="payrollSettingsForm">
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Pay Cycle</label>
+                    <select class="form-control" name="cycle"><option>Monthly</option><option>Bi-weekly</option><option>Weekly</option></select></div>
+                  <div class="form-group"><label class="form-label">Pay Date</label>
+                    <select class="form-control" name="paydate"><option>Last day of month</option><option>15th & last day</option><option>Every Friday</option></select></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Currency</label>
+                    <select class="form-control" name="currency"><option>USD ($)</option><option>EUR (€)</option><option>GBP (£)</option></select></div>
+                  <div class="form-group"><label class="form-label">Tax Year Start</label>
+                    <select class="form-control" name="taxyr"><option>January 1</option><option>April 6</option></select></div>
+                </div>
+                <div class="setting-row" style="padding:.65rem 0;">
+                  <div class="setting-info"><strong>Auto-run payroll</strong><span>Automatically process payroll on schedule without manual trigger.</span></div>
+                  <label class="toggle"><input type="checkbox" onchange="showToast('Auto-run '+(this.checked?'enabled':'disabled'),'info')"/><span class="toggle-slider"></span></label>
+                </div>
+                <div class="setting-row" style="padding:.65rem 0;border-bottom:none;">
+                  <div class="setting-info"><strong>Send payslips by email</strong><span>Automatically email payslips to employees after each run.</span></div>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('Payslip emails '+(this.checked?'on':'off'),'info')"/><span class="toggle-slider"></span></label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Save Payroll Settings</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEAVE POLICIES -->
+        <div class="panel" id="panel-leave-s">
+          <div class="sc">
+            <div class="sc-head"><h3>Leave Policies</h3><button class="btn btn-primary btn-sm" onclick="showToast('New leave policy added','success')">+ Add Policy</button></div>
+            <div style="overflow-x:auto;">
+              <table class="data-table">
+                <thead><tr><th>Policy Name</th><th>Days Per Year</th><th>Carry Over</th><th>Accrual</th><th>Applies To</th><th>Actions</th></tr></thead>
+                <tbody id="policiesBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PERFORMANCE SETTINGS -->
+        <div class="panel" id="panel-perf-s">
+          <div class="sc">
+            <div class="sc-head"><h3>Performance Review Settings</h3></div>
+            <div class="sc-body">
+              <form id="perfSettingsForm">
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Review Cadence</label>
+                    <select class="form-control"><option>Quarterly</option><option>Semi-Annual</option><option>Annual</option></select></div>
+                  <div class="form-group"><label class="form-label">Rating Scale</label>
+                    <select class="form-control"><option>1–5 Stars</option><option>1–10 Scale</option><option>Letter Grade</option></select></div>
+                </div>
+                <div class="setting-row" style="padding:.65rem 0;">
+                  <div class="setting-info"><strong>Enable 360° Feedback</strong><span>Allow peer and subordinate reviews.</span></div>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('360° feedback '+(this.checked?'on':'off'),'info')"/><span class="toggle-slider"></span></label>
+                </div>
+                <div class="setting-row" style="padding:.65rem 0;border-bottom:none;">
+                  <div class="setting-info"><strong>Self-review Required</strong><span>Employees must complete self-assessment before manager review.</span></div>
+                  <label class="toggle"><input type="checkbox" checked onchange="showToast('Self-review requirement '+(this.checked?'on':'off'),'info')"/><span class="toggle-slider"></span></label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Save Settings</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- INTEGRATIONS -->
+        <div class="panel" id="panel-integrations">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;" id="integrationsGrid"></div>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="panel" id="panel-security">
+          <div class="sc">
+            <div class="sc-head"><h3>Security Settings</h3></div>
+            <div class="sc-body">
+              <div class="setting-row">
+                <div class="setting-info"><strong>Two-Factor Authentication (2FA)</strong><span>Require 2FA for all admin accounts.</span></div>
+                <label class="toggle"><input type="checkbox" checked onchange="showToast('2FA requirement '+(this.checked?'enforced':'optional'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info"><strong>Single Sign-On (SSO)</strong><span>Allow login via Google or Microsoft.</span></div>
+                <label class="toggle"><input type="checkbox" onchange="showToast('SSO '+(this.checked?'enabled':'disabled'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info"><strong>Session Timeout</strong><span>Automatically log out after inactivity.</span></div>
+                <select class="filter-select" onchange="showToast('Session timeout set to '+this.value,'info')">
+                  <option>30 minutes</option><option>1 hour</option><option>4 hours</option><option>Never</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info"><strong>IP Allowlist</strong><span>Restrict access to specific IP ranges.</span></div>
+                <label class="toggle"><input type="checkbox" onchange="showToast('IP allowlist '+(this.checked?'enabled':'disabled'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div class="setting-row" style="border-bottom:none;">
+                <div class="setting-info"><strong>Login Audit Log</strong><span>Record all login attempts.</span></div>
+                <label class="toggle"><input type="checkbox" checked onchange="showToast('Login audit '+(this.checked?'on':'off'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BILLING -->
+        <div class="panel" id="panel-billing">
+          <div class="sc" style="background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;">
+            <div class="sc-body" style="padding:1.5rem;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+                <div>
+                  <div class="badge" style="background:rgba(255,255,255,.2);color:#fff;margin-bottom:.75rem;">Professional Plan</div>
+                  <h2 style="color:#fff;margin-bottom:.35rem;">$19 / user / month</h2>
+                  <p style="color:rgba(255,255,255,.75);margin:0;">248 users · Next billing: Oct 1, 2026</p>
+                </div>
+                <div style="text-align:right;">
+                  <strong style="display:block;font-size:1.6rem;color:#fff;">$4,712/mo</strong>
+                  <span style="font-size:.82rem;color:rgba(255,255,255,.7);">Total monthly charge</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sc">
+            <div class="sc-head"><h3>Payment Method</h3><button class="btn btn-outline btn-sm" onclick="showToast('Payment method updated','success')">Update</button></div>
+            <div class="sc-body">
+              <div style="display:flex;align-items:center;gap:1rem;padding:.75rem 1rem;background:var(--gray-100);border-radius:10px;">
+                <span style="font-size:1.5rem;">💳</span>
+                <div><strong>Visa ending in 4242</strong><p style="font-size:.8rem;margin:0;color:var(--gray-500);">Expires 12/2027</p></div>
+                <span class="badge badge-green" style="margin-left:auto;">Primary</span>
+              </div>
+            </div>
+          </div>
+          <div class="sc">
+            <div class="sc-head"><h3>Billing History</h3></div>
+            <div style="overflow-x:auto;">
+              <table class="data-table">
+                <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th><th>Invoice</th></tr></thead>
+                <tbody>
+                  <tr><td>Sep 1, 2026</td><td>Professional Plan — 248 users</td><td>$4,712</td><td><span class="badge badge-green">Paid</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Invoice downloaded','info')">⬇ PDF</button></td></tr>
+                  <tr><td>Aug 1, 2026</td><td>Professional Plan — 246 users</td><td>$4,674</td><td><span class="badge badge-green">Paid</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Invoice downloaded','info')">⬇ PDF</button></td></tr>
+                  <tr><td>Jul 1, 2026</td><td>Professional Plan — 244 users</td><td>$4,636</td><td><span class="badge badge-green">Paid</span></td><td><button class="btn btn-outline btn-sm" onclick="showToast('Invoice downloaded','info')">⬇ PDF</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- DANGER ZONE -->
+        <div class="panel" id="panel-danger">
+          <div class="danger-zone">
+            <h3 style="color:var(--danger);margin-bottom:1rem;">⚠️ Danger Zone</h3>
+            <div class="danger-action">
+              <div><strong>Export All Data</strong><span>Download a full export of all HR data in CSV format.</span></div>
+              <button class="btn btn-outline btn-sm" onclick="showToast('Export started — you will receive an email when ready','info')">Export</button>
+            </div>
+            <div class="danger-action">
+              <div><strong>Reset to Defaults</strong><span>Reset all settings to factory defaults. This cannot be undone.</span></div>
+              <button class="btn btn-sm" style="background:#fee2e2;color:var(--danger);" onclick="if(confirm('Reset all settings? This cannot be undone.'))showToast('Settings reset to defaults','info')">Reset</button>
+            </div>
+            <div class="danger-action">
+              <div><strong>Delete All Employees</strong><span>Permanently delete all employee records. Payroll history is preserved.</span></div>
+              <button class="btn btn-danger btn-sm" onclick="showToast('This action requires Super Admin approval','error')">Delete Records</button>
+            </div>
+            <div class="danger-action">
+              <div><strong>Delete Account</strong><span>Permanently close your PeopleCore account and delete all data.</span></div>
+              <button class="btn btn-danger btn-sm" onclick="showToast('Account deletion requires written confirmation — check your email','error')">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+<script src="sidebar.js"></script>
+<script>
+// Panel navigation
+document.querySelectorAll('.settings-nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.settings-nav-item').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('panel-'+item.dataset.panel)?.classList.add('active');
+  });
+});
+
+// Forms
+['companyForm','profileForm','payrollSettingsForm','perfSettingsForm'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('submit',e=>{e.preventDefault();showToast('Settings saved successfully!','success');});
+});
+document.getElementById('pwForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const f=e.target;
+  if(f.new.value!==f.confirm.value){showToast('Passwords do not match','error');return;}
+  if(f.new.value.length<8){showToast('Password must be at least 8 characters','error');return;}
+  e.target.reset();
+  showToast('Password updated successfully!','success');
+});
+document.getElementById('saveAllBtn').addEventListener('click',()=>showToast('All changes saved!','success'));
+
+// Leave policies
+const policies=[
+  {name:'Annual Leave',    days:25, carryOver:5,   accrual:'Monthly', appliesTo:'All Employees'},
+  {name:'Sick Leave',      days:10, carryOver:0,   accrual:'Upfront',  appliesTo:'All Employees'},
+  {name:'Parental Leave',  days:90, carryOver:0,   accrual:'Upfront',  appliesTo:'All Employees'},
+  {name:'Work From Home',  days:20, carryOver:0,   accrual:'Monthly', appliesTo:'Full-Time'},
+  {name:'Study Leave',     days:10, carryOver:3,   accrual:'Upfront',  appliesTo:'Full-Time'},
+];
+document.getElementById('policiesBody').innerHTML=policies.map(p=>`<tr>
+  <td><strong>${p.name}</strong></td>
+  <td>${p.days} days</td>
+  <td>${p.carryOver} days</td>
+  <td>${p.accrual}</td>
+  <td>${p.appliesTo}</td>
+  <td><div style="display:flex;gap:.35rem;">
+    <button class="btn btn-outline btn-sm" onclick="showToast('Editing ${p.name}','info')">Edit</button>
+    <button class="btn btn-sm" style="background:#fee2e2;color:var(--danger);" onclick="showToast('${p.name} deleted','info')">Delete</button>
+  </div></td>
+</tr>`).join('');
+
+// Integrations
+const integrations=[
+  {name:'Slack',      icon:'💬', bg:'#f5f0ff', desc:'Send HR notifications and approvals to Slack channels.', connected:true},
+  {name:'Google Workspace',icon:'🔵',bg:'#e8f0fe',desc:'Sync employee directory with Google Workspace.',connected:true},
+  {name:'Microsoft 365',icon:'🟦',bg:'#e0efff',desc:'Import users from Azure AD and sync calendars.',connected:false},
+  {name:'Stripe',     icon:'💳', bg:'#f0fdf4', desc:'Automate payroll direct deposits via Stripe Connect.',connected:false},
+  {name:'Greenhouse', icon:'🌱', bg:'#dcfce7', desc:'Two-way sync with Greenhouse ATS for recruitment.',connected:true},
+  {name:'Zapier',     icon:'⚡', bg:'#fef3c7', desc:'Connect PeopleCore to 5000+ apps with no code.',connected:false},
+  {name:'BambooHR',   icon:'🎋', bg:'#dcfce7', desc:'Migrate or sync data from BambooHR.',connected:false},
+  {name:'QuickBooks', icon:'🟩', bg:'#f0fdf4', desc:'Sync payroll data with QuickBooks accounting.',connected:false},
+];
+const ig=document.getElementById('integrationsGrid');
+integrations.forEach(i=>{
+  ig.innerHTML+=`<div class="integration-card">
+    <div class="integration-logo" style="background:${i.bg};">${i.icon}</div>
+    <div style="flex:1;">
+      <div class="integration-name">${i.name}</div>
+      <div class="integration-desc">${i.desc}</div>
+    </div>
+    <div style="flex-shrink:0;margin-left:.5rem;">
+      ${i.connected
+        ?`<button class="btn btn-sm" style="background:#fee2e2;color:var(--danger);" onclick="showToast('${i.name} disconnected','info')">Disconnect</button>`
+        :`<button class="btn btn-primary btn-sm" onclick="showToast('Connecting to ${i.name}…','info')">Connect</button>`}
+    </div>
+  </div>`;
+});
+</script>
+</body>
+</html>

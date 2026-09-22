@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payroll — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body{background:#f8fafc;}
+    .dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    .sidebar{background:var(--dark);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:1.25rem 1.25rem 0;display:flex;align-items:center;gap:.55rem;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:1rem;}
+    .sidebar-logo .logo-icon{width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:.5rem 1rem;}
+    .sidebar-nav{flex:1;padding:0 .75rem;}
+    .sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,.08);}
+    .user-chip{display:flex;align-items:center;gap:.65rem;padding:.6rem .5rem;border-radius:8px;cursor:pointer;}
+    .user-chip .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+    .user-chip strong{display:block;font-size:.85rem;color:#fff;line-height:1.2;}
+    .user-chip span{font-size:.75rem;color:rgba(255,255,255,.4);}
+    .dash-main{padding:2rem;overflow-y:auto;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+    .topbar h2{margin:0 0 .2rem;}
+    .topbar p{margin:0;font-size:.88rem;color:var(--gray-500);}
+
+    .pay-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem;}
+    .pay-card{background:#fff;border-radius:14px;padding:1.4rem;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+    .pay-card .icon{font-size:1.5rem;margin-bottom:.5rem;}
+    .pay-card strong{display:block;font-size:1.9rem;font-weight:800;color:var(--gray-900);line-height:1;}
+    .pay-card span{font-size:.82rem;color:var(--gray-500);}
+    .pay-card .chg{font-size:.8rem;font-weight:600;margin-top:.3rem;}
+    .chg-up{color:var(--success);} .chg-dn{color:var(--danger);}
+
+    .section-card{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:1.5rem;overflow:hidden;}
+    .section-card-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--gray-100);}
+    .section-card-head h3{margin:0;font-size:1rem;}
+    .section-card-body{padding:1.5rem;}
+
+    .pay-status-bar{display:flex;gap:0;border-radius:10px;overflow:hidden;height:14px;margin:1rem 0;}
+    .psb-seg{height:100%;transition:width .4s ease;}
+
+    .breakdown-row{display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--gray-100);font-size:.9rem;}
+    .breakdown-row:last-child{border-bottom:none;}
+    .breakdown-row .name{color:var(--gray-700);}
+    .breakdown-row .amount{font-weight:700;color:var(--gray-900);}
+    .breakdown-row .dot{width:10px;height:10px;border-radius:3px;margin-right:.5rem;display:inline-block;}
+
+    .run-steps{display:flex;gap:0;margin-bottom:2rem;}
+    .run-step{flex:1;text-align:center;padding:.75rem;font-size:.82rem;font-weight:600;border-bottom:3px solid var(--gray-300);color:var(--gray-400);}
+    .run-step.done{border-color:var(--success);color:var(--success);}
+    .run-step.active{border-color:var(--primary);color:var(--primary);}
+
+    @media(max-width:1024px){.dash-layout{grid-template-columns:1fr;}.sidebar{display:none;}}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar-mount"></aside>
+
+  <main class="dash-main">
+    <div class="topbar">
+      <div>
+        <h2>💰 Payroll</h2>
+        <p>Manage employee compensation, run payroll, and view pay history.</p>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="showToast('Payroll report exported','info')">⬇ Export</button>
+        <button class="btn btn-primary" id="runPayrollBtn">▶ Run Payroll</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="pay-grid">
+      <div class="pay-card">
+        <div class="icon">💵</div>
+        <strong>$2,414,820</strong>
+        <span>Total Monthly Payroll</span>
+        <div class="chg chg-up">▲ 3.2% vs last month</div>
+      </div>
+      <div class="pay-card">
+        <div class="icon">👥</div>
+        <strong>248</strong>
+        <span>Employees on Payroll</span>
+        <div class="chg chg-up">▲ 2 new this cycle</div>
+      </div>
+      <div class="pay-card">
+        <div class="icon">📆</div>
+        <strong>Sep 30</strong>
+        <span>Next Pay Date</span>
+        <div class="chg" style="color:var(--primary);">14 days away</div>
+      </div>
+      <div class="pay-card">
+        <div class="icon">🏦</div>
+        <strong>$348,210</strong>
+        <span>Total Tax Withheld</span>
+        <div class="chg chg-dn">▲ 2.1% vs last month</div>
+      </div>
+    </div>
+
+    <!-- Run Status -->
+    <div class="section-card">
+      <div class="section-card-head">
+        <h3>September 2026 Payroll Run</h3>
+        <span class="badge badge-yellow">In Progress</span>
+      </div>
+      <div class="section-card-body">
+        <div class="run-steps">
+          <div class="run-step done">✓ Data Review</div>
+          <div class="run-step done">✓ Approve Hours</div>
+          <div class="run-step active">⟳ Calculate Pay</div>
+          <div class="run-step">Submit</div>
+          <div class="run-step">Disburse</div>
+        </div>
+        <p style="font-size:.9rem;color:var(--gray-500);margin-bottom:1.25rem;">Step 3 of 5 — Calculating gross pay, deductions, and net pay for all 248 employees.</p>
+        <div style="height:10px;background:var(--gray-100);border-radius:999px;overflow:hidden;margin-bottom:.5rem;">
+          <div id="payProgressBar" style="width:48%;height:100%;background:var(--primary);border-radius:999px;transition:width .4s;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--gray-500);">
+          <span id="payProgressLabel">Processing 119 / 248 employees…</span>
+          <span>48%</span>
+        </div>
+        <div style="margin-top:1.25rem;display:flex;gap:.75rem;">
+          <button class="btn btn-primary" id="continuePayBtn">Continue Processing</button>
+          <button class="btn btn-outline" onclick="showToast('Payroll paused','info')">Pause</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+      <!-- Payroll breakdown -->
+      <div class="section-card">
+        <div class="section-card-head"><h3>Pay Breakdown</h3></div>
+        <div class="section-card-body">
+          <div class="pay-status-bar">
+            <div class="psb-seg" style="width:58%;background:var(--primary);"></div>
+            <div class="psb-seg" style="width:18%;background:var(--secondary);"></div>
+            <div class="psb-seg" style="width:12%;background:var(--warning);"></div>
+            <div class="psb-seg" style="width:12%;background:var(--danger);"></div>
+          </div>
+          <div class="breakdown-row"><span><span class="dot" style="background:var(--primary);"></span><span class="name">Base Salaries</span></span><span class="amount">$1,800,400</span></div>
+          <div class="breakdown-row"><span><span class="dot" style="background:var(--secondary);"></span><span class="name">Bonuses & Commissions</span></span><span class="amount">$434,668</span></div>
+          <div class="breakdown-row"><span><span class="dot" style="background:var(--warning);"></span><span class="name">Benefits & Insurance</span></span><span class="amount">$289,778</span></div>
+          <div class="breakdown-row" style="border-top:2px solid var(--gray-300);margin-top:.5rem;padding-top:.75rem;">
+            <span style="font-weight:700;">Total Gross</span><span class="amount">$2,524,846</span>
+          </div>
+          <div class="breakdown-row"><span class="name">Federal Tax (13.8%)</span><span class="amount" style="color:var(--danger);">-$240,026</span></div>
+          <div class="breakdown-row"><span class="name">Social Security (6.2%)</span><span class="amount" style="color:var(--danger);">-$86,540</span></div>
+          <div class="breakdown-row"><span class="name">Medicare (1.45%)</span><span class="amount" style="color:var(--danger);">-$21,644</span></div>
+          <div class="breakdown-row" style="border-top:2px solid var(--gray-300);margin-top:.5rem;padding-top:.75rem;">
+            <span style="font-weight:800;font-size:1rem;">Net Payroll</span><span class="amount" style="font-size:1.1rem;color:var(--success);">$2,176,636</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Department payroll -->
+      <div class="section-card">
+        <div class="section-card-head"><h3>By Department</h3></div>
+        <div class="section-card-body">
+          <div id="deptPayroll"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pay History Table -->
+    <div class="section-card">
+      <div class="section-card-head">
+        <h3>Recent Pay History</h3>
+        <input class="search-input" style="max-width:220px;padding:.4rem .8rem;font-size:.85rem;" placeholder="Search employee…" id="paySearch"/>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="payTable">
+          <thead><tr>
+            <th>Employee</th><th>Department</th><th>Gross Pay</th><th>Deductions</th><th>Net Pay</th><th>Pay Date</th><th>Status</th>
+          </tr></thead>
+          <tbody id="payTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="runPayrollModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Run Payroll</h3><button class="modal-close" data-modal-close="runPayrollModal">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Pay Period</label>
+        <select class="form-control"><option>September 1–30, 2026</option><option>October 1–31, 2026</option></select></div>
+      <div class="form-group"><label class="form-label">Pay Date</label>
+        <input type="date" class="form-control" value="2026-09-30"/></div>
+      <div class="form-group"><label class="form-label">Employees</label>
+        <select class="form-control"><option>All Employees (248)</option><option>Full-Time Only</option><option>Contractors Only</option></select></div>
+      <div style="background:var(--gray-100);border-radius:10px;padding:1rem;font-size:.88rem;color:var(--gray-700);">
+        ⚠️ This will initiate payroll for <strong>248 employees</strong> totalling approximately <strong>$2.41M</strong>. Review before submitting.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-modal-close="runPayrollModal">Cancel</button>
+      <button class="btn btn-primary" onclick="startPayroll()">Confirm & Run</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="sidebar.js"></script>
+<script>
+const depts = [
+  {name:'Engineering', amount:920400, color:'var(--primary)', pct:38},
+  {name:'Sales',       amount:480200, color:'var(--accent)',  pct:20},
+  {name:'Design',      amount:362100, color:'var(--secondary)',pct:15},
+  {name:'Marketing',   amount:289600, color:'var(--warning)', pct:12},
+  {name:'HR',          amount:217000, color:'var(--success)', pct:9},
+  {name:'Finance',     amount:145520, color:'#f59e0b',        pct:6},
+];
+const dp = document.getElementById('deptPayroll');
+depts.forEach(d=>{
+  dp.innerHTML += `<div style="margin-bottom:.85rem;">
+    <div style="display:flex;justify-content:space-between;font-size:.85rem;font-weight:600;margin-bottom:.3rem;">
+      <span>${d.name}</span><span>$${d.amount.toLocaleString()}</span>
+    </div>
+    <div style="height:8px;background:var(--gray-100);border-radius:999px;overflow:hidden;">
+      <div style="width:${d.pct}%;height:100%;background:${d.color};border-radius:999px;"></div>
+    </div>
+  </div>`;
+});
+
+const employees = [
+  {name:'Sarah Mitchell', dept:'Design',      gross:7833, ded:1410, date:'Sep 15, 2026', status:'Paid'},
+  {name:'James Okafor',   dept:'Engineering', gross:10667,ded:1920, date:'Sep 15, 2026', status:'Paid'},
+  {name:'Carlos Rivera',  dept:'Sales',       gross:7200, ded:1296, date:'Sep 15, 2026', status:'Paid'},
+  {name:'Elena Vasquez',  dept:'HR',          gross:7583, ded:1365, date:'Sep 15, 2026', status:'Paid'},
+  {name:'Amara Diallo',   dept:'Finance',     gross:6917, ded:1245, date:'Sep 15, 2026', status:'Paid'},
+  {name:'Tom Henderson',  dept:'Operations',  gross:11833,ded:2130, date:'Sep 15, 2026', status:'Paid'},
+  {name:'Liu Wei',        dept:'Engineering', gross:8750, ded:1575, date:'Sep 30, 2026', status:'Pending'},
+  {name:'Priya Nair',     dept:'Marketing',   gross:7292, ded:1312, date:'Sep 30, 2026', status:'On Leave'},
+];
+function renderTable(data){
+  const body = document.getElementById('payTableBody');
+  body.innerHTML = data.map(e=>{
+    const net = e.gross - e.ded;
+    const initials = e.name.split(' ').map(n=>n[0]).join('');
+    const sc = e.status==='Paid'?'badge-green':e.status==='Pending'?'badge-yellow':'badge-blue';
+    return `<tr>
+      <td><div class="employee-info">
+        <div class="employee-avatar" style="background:linear-gradient(135deg,var(--primary),var(--accent));">${initials}</div>
+        <div><div class="employee-name">${e.name}</div></div>
+      </div></td>
+      <td>${e.dept}</td>
+      <td>$${e.gross.toLocaleString()}</td>
+      <td style="color:var(--danger);">-$${e.ded.toLocaleString()}</td>
+      <td style="font-weight:700;color:var(--success);">$${net.toLocaleString()}</td>
+      <td>${e.date}</td>
+      <td><span class="badge ${sc}">${e.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+renderTable(employees);
+document.getElementById('paySearch').addEventListener('input', function(){
+  renderTable(employees.filter(e=>e.name.toLowerCase().includes(this.value.toLowerCase())));
+});
+
+document.getElementById('runPayrollBtn').addEventListener('click',()=>openModal('runPayrollModal'));
+
+function startPayroll(){
+  closeModal('runPayrollModal');
+  showToast('Payroll run initiated for 248 employees!','success');
+}
+
+// Animate progress bar
+let prog = 48;
+document.getElementById('continuePayBtn').addEventListener('click',function(){
+  this.disabled = true;
+  this.textContent = 'Processing…';
+  const bar = document.getElementById('payProgressBar');
+  const lbl = document.getElementById('payProgressLabel');
+  const iv = setInterval(()=>{
+    prog = Math.min(prog+2, 100);
+    const count = Math.round(prog/100*248);
+    bar.style.width = prog+'%';
+    lbl.textContent = prog<100 ? `Processing ${count} / 248 employees…` : 'All employees processed ✓';
+    bar.parentElement.nextElementSibling.querySelector('span:last-child').textContent = prog+'%';
+    if(prog>=100){
+      clearInterval(iv);
+      showToast('Payroll calculation complete! Ready to submit.','success');
+      document.querySelector('.run-step.active').classList.remove('active');
+      document.querySelector('.run-step.active')?.classList.add('done');
+      this.textContent='Submit Payroll';
+      this.disabled=false;
+      document.querySelector('.badge-yellow').textContent='Ready to Submit';
+      document.querySelector('.badge-yellow').className='badge badge-green';
+    }
+  },60);
+});
+</script>
+</body>
+</html>

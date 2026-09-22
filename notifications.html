@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notifications — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body{background:#f8fafc;}
+    .dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    .sidebar{background:var(--dark);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:1.25rem 1.25rem 0;display:flex;align-items:center;gap:.55rem;font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:1rem;}
+    .sidebar-logo .logo-icon{width:32px;height:32px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+    .sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:.5rem 1rem;}
+    .sidebar-nav{flex:1;padding:0 .75rem;}
+    .sidebar-footer{padding:1rem;border-top:1px solid rgba(255,255,255,.08);}
+    .user-chip{display:flex;align-items:center;gap:.65rem;padding:.6rem .5rem;border-radius:8px;}
+    .user-chip .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+    .user-chip strong{display:block;font-size:.85rem;color:#fff;line-height:1.2;}
+    .user-chip span{font-size:.75rem;color:rgba(255,255,255,.4);}
+    .dash-main{padding:2rem;overflow-y:auto;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+
+    .notif-layout{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;}
+    .sc{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;}
+    .sc-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--gray-100);}
+    .sc-head h3{margin:0;font-size:1rem;}
+
+    .notif-item{display:flex;align-items:flex-start;gap:.9rem;padding:1rem 1.25rem;border-bottom:1px solid var(--gray-100);cursor:pointer;transition:background .15s;position:relative;}
+    .notif-item:last-child{border-bottom:none;}
+    .notif-item:hover{background:#f8fafc;}
+    .notif-item.unread{background:#eff6ff;}
+    .notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary);border-radius:0 3px 3px 0;}
+    .notif-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .notif-body{flex:1;}
+    .notif-title{font-size:.9rem;font-weight:600;color:var(--gray-900);margin-bottom:.2rem;display:flex;align-items:center;gap:.5rem;}
+    .notif-title .unread-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0;}
+    .notif-text{font-size:.82rem;color:var(--gray-500);line-height:1.5;}
+    .notif-time{font-size:.76rem;color:var(--gray-400);margin-top:.3rem;}
+    .notif-action{flex-shrink:0;display:flex;gap:.4rem;align-items:center;}
+
+    .filter-pills{display:flex;gap:.4rem;flex-wrap:wrap;padding:1rem 1.25rem;border-bottom:1px solid var(--gray-100);}
+    .filter-pill{padding:.3rem .85rem;border-radius:999px;font-size:.8rem;font-weight:600;border:1.5px solid var(--gray-300);background:#fff;cursor:pointer;transition:var(--transition);}
+    .filter-pill:hover,.filter-pill.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+    .pref-row{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.25rem;border-bottom:1px solid var(--gray-100);}
+    .pref-row:last-child{border-bottom:none;}
+    .pref-info strong{display:block;font-size:.88rem;color:var(--gray-900);}
+    .pref-info span{font-size:.76rem;color:var(--gray-500);}
+
+    /* Toggle switch */
+    .toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:var(--gray-300);border-radius:999px;cursor:pointer;transition:.3s;}
+    .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;}
+    .toggle input:checked + .toggle-slider{background:var(--primary);}
+    .toggle input:checked + .toggle-slider::before{transform:translateX(18px);}
+
+    .digest-card{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+    .digest-card h3{color:#fff;margin-bottom:.5rem;}
+    .digest-card p{color:rgba(255,255,255,.8);font-size:.88rem;margin-bottom:1rem;}
+
+    @media(max-width:1024px){.dash-layout{grid-template-columns:1fr;}.sidebar{display:none;}.notif-layout{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar-mount"></aside>
+  <main class="dash-main">
+    <div class="topbar">
+      <div>
+        <h2>🔔 Notifications</h2>
+        <p style="margin:0;font-size:.88rem;color:var(--gray-500);">Stay on top of approvals, alerts, and updates.</p>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" id="markAllBtn">✓ Mark All Read</button>
+        <button class="btn btn-primary btn-sm" data-modal-open="sendNotifModal">📢 Send Notification</button>
+      </div>
+    </div>
+
+    <div class="notif-layout">
+      <!-- Left: notification feed -->
+      <div>
+        <div class="sc">
+          <div class="filter-pills" id="notifFilters">
+            <button class="filter-pill active" data-filter="all">All <span id="allCount" style="background:var(--primary);color:#fff;border-radius:999px;padding:.05rem .45rem;font-size:.72rem;margin-left:.25rem;">24</span></button>
+            <button class="filter-pill" data-filter="unread">Unread <span id="unreadCount" style="background:#dc2626;color:#fff;border-radius:999px;padding:.05rem .45rem;font-size:.72rem;margin-left:.25rem;">5</span></button>
+            <button class="filter-pill" data-filter="approval">Approvals</button>
+            <button class="filter-pill" data-filter="payroll">Payroll</button>
+            <button class="filter-pill" data-filter="hr">HR Alerts</button>
+            <button class="filter-pill" data-filter="system">System</button>
+          </div>
+          <div id="notifFeed"></div>
+        </div>
+      </div>
+
+      <!-- Right: preferences + digest -->
+      <div>
+        <div class="digest-card">
+          <h3>📋 Daily Digest</h3>
+          <p>You have <strong>5 unread</strong> notifications and <strong>8 pending approvals</strong> today.</p>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Digest sent to your email','success')">Send to Email</button>
+        </div>
+
+        <div class="sc" style="margin-bottom:1.5rem;">
+          <div class="sc-head"><h3>Notification Preferences</h3></div>
+          <div id="prefList"></div>
+          <div style="padding:1rem 1.25rem;">
+            <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;" onclick="showToast('Preferences saved','success')">Save Preferences</button>
+          </div>
+        </div>
+
+        <div class="sc">
+          <div class="sc-head"><h3>Delivery Channels</h3></div>
+          <div style="padding:1.25rem;">
+            <div style="display:flex;flex-direction:column;gap:.85rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div><strong style="font-size:.88rem;">In-App</strong><p style="font-size:.76rem;margin:0;">Browser notifications</p></div>
+                <label class="toggle"><input type="checkbox" checked onchange="showToast('In-app notifications '+(this.checked?'enabled':'disabled'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div><strong style="font-size:.88rem;">Email</strong><p style="font-size:.76rem;margin:0;">Daily digest + urgent</p></div>
+                <label class="toggle"><input type="checkbox" checked onchange="showToast('Email notifications '+(this.checked?'enabled':'disabled'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div><strong style="font-size:.88rem;">SMS</strong><p style="font-size:.76rem;margin:0;">Critical alerts only</p></div>
+                <label class="toggle"><input type="checkbox" onchange="showToast('SMS notifications '+(this.checked?'enabled':'disabled'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div><strong style="font-size:.88rem;">Slack</strong><p style="font-size:.76rem;margin:0;">Team channel alerts</p></div>
+                <label class="toggle"><input type="checkbox" checked onchange="showToast('Slack notifications '+(this.checked?'enabled':'disabled'),'info')"/><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal-overlay" id="sendNotifModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Send Notification</h3><button class="modal-close" data-modal-close="sendNotifModal">✕</button></div>
+    <div class="modal-body">
+      <form id="sendNotifForm">
+        <div class="form-group"><label class="form-label">Title *</label><input name="title" class="form-control" placeholder="Notification title…" required/></div>
+        <div class="form-group"><label class="form-label">Message *</label><textarea name="msg" class="form-control" rows="3" placeholder="Write your message…" required></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Recipients</label>
+            <select name="to" class="form-control"><option>All Employees</option><option>Managers Only</option><option>Engineering</option><option>HR Team</option></select></div>
+          <div class="form-group"><label class="form-label">Priority</label>
+            <select name="priority" class="form-control"><option>Normal</option><option>High</option><option>Urgent</option></select></div>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:.5rem;">
+          <button type="button" class="btn btn-outline" data-modal-close="sendNotifModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Send Now</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="sidebar.js"></script>
+<script>
+const notifications=[
+  {id:1, type:'approval', icon:'📅', iconBg:'#fef3c7', title:'Leave Request — Layla Mansour', text:'Maternity leave Sep 23 – Oct 20 is pending your approval.', time:'2 min ago', unread:true, actions:true},
+  {id:2, type:'approval', icon:'📅', iconBg:'#fef3c7', title:'Leave Request — Nina Petrov',   text:'Sick leave Sep 19 is pending your approval.', time:'18 min ago', unread:true, actions:true},
+  {id:3, type:'hr',       icon:'👤', iconBg:'#dcfce7', title:'New Employee Onboarded',         text:'Liu Wei has joined the Engineering team. Onboarding checklist sent.', time:'1 hour ago', unread:true},
+  {id:4, type:'payroll',  icon:'💰', iconBg:'#dbeafe', title:'Payroll Processing Started',     text:'September 2026 payroll is now processing for 248 employees.', time:'3 hours ago', unread:true},
+  {id:5, type:'system',   icon:'🔒', iconBg:'#ede9fe', title:'Security Alert',                 text:'Admin login detected from a new device (Chrome, Windows). If this was you, no action needed.', time:'4 hours ago', unread:true},
+  {id:6, type:'hr',       icon:'🎯', iconBg:'#ede9fe', title:'Performance Review Deadline',    text:'Q3 2026 performance reviews are due on September 30. 38 reviews still pending.', time:'Yesterday'},
+  {id:7, type:'approval', icon:'✍️', iconBg:'#fef3c7', title:'Contract Renewal — Ben Carter', text:'Employment contract expires Oct 1. Renewal requires your signature.', time:'Yesterday'},
+  {id:8, type:'system',   icon:'📊', iconBg:'#e0f2fe', title:'Monthly Analytics Ready',        text:'Your August 2026 HR analytics report has been generated and is ready to view.', time:'2 days ago'},
+  {id:9, type:'hr',       icon:'🎓', iconBg:'#dcfce7', title:'Training Compliance Alert',      text:'12 employees have overdue mandatory training. Reminders have been sent automatically.', time:'2 days ago'},
+  {id:10,type:'payroll',  icon:'✅', iconBg:'#dcfce7', title:'Payroll Disbursed',              text:'August 2026 payroll of $2,387,420 successfully disbursed to 246 employees.', time:'Sep 1, 2026'},
+  {id:11,type:'hr',       icon:'📋', iconBg:'#dbeafe', title:'5 New Job Applications',         text:'5 candidates applied for Senior Frontend Engineer today. Review in Recruitment.', time:'Sep 15, 2026'},
+  {id:12,type:'system',   icon:'⚙️', iconBg:'#f1f5f9', title:'System Update Complete',         text:'PeopleCore has been updated to v4.2.1. See changelog for new features.', time:'Sep 14, 2026'},
+];
+
+let activeFilter='all';
+let localNotifs=[...notifications];
+
+function renderFeed(filter){
+  const feed=document.getElementById('notifFeed');
+  const data=filter==='all'?localNotifs:
+             filter==='unread'?localNotifs.filter(n=>n.unread):
+             localNotifs.filter(n=>n.type===filter);
+  if(!data.length){
+    feed.innerHTML='<div style="text-align:center;padding:3rem;color:var(--gray-400);"><div style="font-size:2.5rem;margin-bottom:.75rem;">🔕</div><p>No notifications here</p></div>';
+    return;
+  }
+  feed.innerHTML=data.map(n=>`
+    <div class="notif-item${n.unread?' unread':''}" id="notif-${n.id}" onclick="markRead(${n.id})">
+      <div class="notif-icon" style="background:${n.iconBg};">${n.icon}</div>
+      <div class="notif-body">
+        <div class="notif-title">${n.unread?'<span class="unread-dot"></span>':''} ${n.title}</div>
+        <div class="notif-text">${n.text}</div>
+        <div class="notif-time">${n.time}</div>
+        ${n.actions?`<div style="display:flex;gap:.4rem;margin-top:.5rem;">
+          <button class="btn btn-sm" style="background:#dcfce7;color:var(--success);padding:.3rem .75rem;" onclick="event.stopPropagation();approveLeave(${n.id})">✓ Approve</button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:var(--danger);padding:.3rem .75rem;" onclick="event.stopPropagation();rejectLeave(${n.id})">✕ Reject</button>
+        </div>`:''}
+      </div>
+      <div class="notif-action">
+        <button class="btn btn-sm" style="background:transparent;border:none;color:var(--gray-400);font-size:1.1rem;padding:.2rem;" onclick="event.stopPropagation();deleteNotif(${n.id})" title="Dismiss">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function markRead(id){
+  const n=localNotifs.find(x=>x.id===id);
+  if(n&&n.unread){ n.unread=false; updateCounts(); renderFeed(activeFilter); }
+}
+function deleteNotif(id){
+  localNotifs=localNotifs.filter(x=>x.id!==id);
+  updateCounts(); renderFeed(activeFilter);
+  showToast('Notification dismissed','info');
+}
+function approveLeave(id){
+  const n=localNotifs.find(x=>x.id===id);
+  if(n){ n.actions=false; n.text+=' ✓ <strong style="color:var(--success);">Approved</strong>'; n.unread=false; }
+  updateCounts(); renderFeed(activeFilter);
+  showToast('Leave approved!','success');
+}
+function rejectLeave(id){
+  const n=localNotifs.find(x=>x.id===id);
+  if(n){ n.actions=false; n.text+=' ✕ <strong style="color:var(--danger);">Rejected</strong>'; n.unread=false; }
+  updateCounts(); renderFeed(activeFilter);
+  showToast('Leave rejected','error');
+}
+function updateCounts(){
+  const unread=localNotifs.filter(n=>n.unread).length;
+  document.getElementById('unreadCount').textContent=unread;
+  document.getElementById('allCount').textContent=localNotifs.length;
+}
+
+document.getElementById('markAllBtn').addEventListener('click',()=>{
+  localNotifs.forEach(n=>n.unread=false);
+  updateCounts(); renderFeed(activeFilter);
+  showToast('All notifications marked as read','success');
+});
+
+document.querySelectorAll('.filter-pill').forEach(p=>{
+  p.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-pill').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    activeFilter=p.dataset.filter;
+    renderFeed(activeFilter);
+  });
+});
+
+// Preferences
+const prefs=[
+  {label:'Leave Requests',   desc:'When leave is submitted or status changes', on:true},
+  {label:'Payroll Alerts',   desc:'Processing started, completed, or issues',  on:true},
+  {label:'New Applications', desc:'Job applications submitted',                 on:true},
+  {label:'Performance Reviews',desc:'Review cycles started or deadlines',       on:true},
+  {label:'System Alerts',    desc:'Security events and system updates',         on:true},
+  {label:'Training Reminders',desc:'Course deadlines and completions',          on:false},
+  {label:'Birthday/Anniversaries',desc:'Employee milestones',                   on:false},
+];
+const pl2=document.getElementById('prefList');
+prefs.forEach((p,i)=>{
+  pl2.innerHTML+=`<div class="pref-row">
+    <div class="pref-info"><strong>${p.label}</strong><span>${p.desc}</span></div>
+    <label class="toggle"><input type="checkbox" ${p.on?'checked':''} onchange="showToast('${p.label} notifications '+(this.checked?'on':'off'),'info')"/><span class="toggle-slider"></span></label>
+  </div>`;
+});
+
+// Send form
+document.getElementById('sendNotifForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const d=Object.fromEntries(new FormData(e.target));
+  closeModal('sendNotifModal');
+  e.target.reset();
+  // Inject new notification at top
+  localNotifs.unshift({id:Date.now(),type:'hr',icon:'📢',iconBg:'#dbeafe',title:d.title,text:d.msg+` (sent to: ${d.to}, priority: ${d.priority})`,time:'Just now',unread:false});
+  updateCounts(); renderFeed(activeFilter);
+  showToast('Notification sent!','success');
+});
+
+renderFeed('all');
+</script>
+</body>
+</html>

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recruitment — PeopleCore HR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .page-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: #fff; padding: 2.5rem 0;
+    }
+    .page-header h1 { font-size: 1.9rem; color: #fff; margin-bottom: .35rem; }
+    .page-header p  { color: rgba(255,255,255,.65); margin: 0; }
+    .page-header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+
+    .pipeline-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .pipeline-col { background: var(--gray-100); border-radius: var(--radius); padding: 1rem; }
+    .pipeline-col-header {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: var(--gray-500); margin-bottom: .75rem;
+    }
+    .pipeline-count {
+      background: var(--white); border-radius: 999px; padding: .1rem .55rem;
+      font-size: .78rem; font-weight: 700; color: var(--gray-700);
+    }
+    .pipeline-card {
+      background: var(--white); border-radius: 8px; padding: .85rem;
+      box-shadow: var(--shadow-sm); margin-bottom: .5rem; font-size: .85rem;
+    }
+    .pipeline-card strong { display: block; color: var(--gray-900); margin-bottom: .2rem; }
+    .pipeline-card span  { color: var(--gray-500); font-size: .78rem; }
+
+    .job-card { padding: 1.5rem; }
+    .job-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .job-logo {
+      width: 52px; height: 52px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+    }
+    .job-title { font-size: 1.05rem; font-weight: 700; color: var(--gray-900); margin-bottom: .2rem; }
+    .job-dept  { font-size: .82rem; color: var(--gray-500); }
+    .job-meta  { display: flex; flex-wrap: wrap; gap: .6rem; margin: .75rem 0; font-size: .82rem; color: var(--gray-500); }
+    .job-meta span { display: flex; align-items: center; gap: .3rem; }
+    .job-desc  { font-size: .88rem; color: var(--gray-600); line-height: 1.6; margin-bottom: .85rem; }
+    .job-footer { display: flex; align-items: center; justify-content: space-between; }
+    .applicant-avatars { display: flex; }
+    .applicant-avatars .mini-avatar {
+      width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--white);
+      margin-left: -6px; first-child { margin-left: 0; }
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700; color: var(--white);
+    }
+    .applicant-avatars .mini-avatar:first-child { margin-left: 0; }
+    .applicant-count { font-size: .8rem; color: var(--gray-500); margin-left: .5rem; }
+
+    .filter-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .filter-tab {
+      padding: .45rem 1rem; border-radius: 999px; font-size: .85rem; font-weight: 600;
+      border: 1.5px solid var(--gray-300); background: var(--white); cursor: pointer;
+      transition: var(--transition);
+    }
+    .filter-tab:hover, .filter-tab.active { background: var(--primary); border-color: var(--primary); color: var(--white); }
+
+    .apply-form-section { background: var(--white); border-radius: 16px; padding: 2.5rem; box-shadow: var(--shadow); }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-icon">👥</div>
+      PeopleCore
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="employees.html">Employees</a></li>
+      <li><a href="recruitment.html" class="active">Recruitment</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="dashboard.html" class="btn btn-outline btn-sm">Log In</a>
+      <button class="btn btn-primary btn-sm" data-modal-open="postJobModal">+ Post a Job</button>
+      <div class="nav-avatar">A</div>
+    </div>
+    <button class="nav-hamburger">☰</button>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="container page-header-inner">
+    <div>
+      <h1>Recruitment & Talent</h1>
+      <p>Manage open roles, track candidates, and hire great people faster.</p>
+    </div>
+    <button class="btn btn-ghost" data-modal-open="postJobModal">+ Post a Job</button>
+  </div>
+</div>
+
+<main class="section" style="padding-top:2.5rem;">
+  <div class="container">
+
+    <!-- Stats -->
+    <div class="grid-4" style="margin-bottom:2rem;">
+      <div class="card stat-card">
+        <div class="icon" style="background:#dbeafe;">📋</div>
+        <strong>34</strong>
+        <p>Open Positions</p>
+      </div>
+      <div class="card stat-card">
+        <div class="icon" style="background:#dcfce7;">👤</div>
+        <strong>218</strong>
+        <p>Active Candidates</p>
+      </div>
+      <div class="card stat-card">
+        <div class="icon" style="background:#fef3c7;">📅</div>
+        <strong>47</strong>
+        <p>Interviews This Week</p>
+      </div>
+      <div class="card stat-card">
+        <div class="icon" style="background:#ede9fe;">🎉</div>
+        <strong>12</strong>
+        <p>Offers Extended</p>
+      </div>
+    </div>
+
+    <!-- Candidate Pipeline -->
+    <div class="card" style="margin-bottom:2rem;">
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+          <h3 style="margin:0;">Candidate Pipeline</h3>
+          <span class="badge badge-blue">This Week</span>
+        </div>
+        <div class="pipeline-board">
+          <div class="pipeline-col">
+            <div class="pipeline-col-header">Applied <span class="pipeline-count">28</span></div>
+            <div class="pipeline-card"><strong>Rachel Kim</strong><span>UX Designer</span></div>
+            <div class="pipeline-card"><strong>David Lowe</strong><span>Backend Eng.</span></div>
+            <div class="pipeline-card"><strong>Fatima Al-Amin</strong><span>HR Specialist</span></div>
+            <div class="pipeline-card" style="text-align:center;color:var(--gray-400);font-size:.8rem;">+25 more</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header">Screening <span class="pipeline-count">14</span></div>
+            <div class="pipeline-card"><strong>Omar Hassan</strong><span>Product Mgr.</span></div>
+            <div class="pipeline-card"><strong>Nina Petrov</strong><span>Data Analyst</span></div>
+            <div class="pipeline-card" style="text-align:center;color:var(--gray-400);font-size:.8rem;">+12 more</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header">Interview <span class="pipeline-count">9</span></div>
+            <div class="pipeline-card"><strong>Chris Wong</strong><span>DevOps Eng.</span></div>
+            <div class="pipeline-card"><strong>Layla Mansour</strong><span>Marketing Mgr.</span></div>
+            <div class="pipeline-card" style="text-align:center;color:var(--gray-400);font-size:.8rem;">+7 more</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header">Offer <span class="pipeline-count">5</span></div>
+            <div class="pipeline-card"><strong>Ben Carter</strong><span>Sales Exec.</span></div>
+            <div class="pipeline-card"><strong>Yuki Tanaka</strong><span>Frontend Dev.</span></div>
+            <div class="pipeline-card" style="text-align:center;color:var(--gray-400);font-size:.8rem;">+3 more</div>
+          </div>
+          <div class="pipeline-col">
+            <div class="pipeline-col-header">Hired <span class="pipeline-count" style="background:#dcfce7;color:var(--success);">3</span></div>
+            <div class="pipeline-card" style="border-left:3px solid var(--success);"><strong>Ana Costa</strong><span>Content Strategist</span></div>
+            <div class="pipeline-card" style="border-left:3px solid var(--success);"><strong>Jake Morris</strong><span>iOS Developer</span></div>
+            <div class="pipeline-card" style="border-left:3px solid var(--success);"><strong>Mei Lin</strong><span>Accountant</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Listings Tabs -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem;">
+      <h2 style="margin:0;">Open Positions</h2>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+        <input type="text" class="search-input" style="min-width:220px;" placeholder="🔍 Search roles…" />
+        <select class="filter-select">
+          <option>All Departments</option>
+          <option>Engineering</option><option>Design</option>
+          <option>Marketing</option><option>Sales</option><option>HR</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-filter="all">All Roles</button>
+      <button class="filter-tab" data-filter="full-time">Full-Time</button>
+      <button class="filter-tab" data-filter="part-time">Part-Time</button>
+      <button class="filter-tab" data-filter="remote">Remote</button>
+      <button class="filter-tab" data-filter="contract">Contract</button>
+    </div>
+
+    <div class="grid-2" id="jobListings">
+
+      <div class="card job-card" data-type="full-time">
+        <div class="job-card-header">
+          <div style="display:flex;gap:.85rem;align-items:center;">
+            <div class="job-logo" style="background:#dbeafe;">💻</div>
+            <div>
+              <div class="job-title">Senior Frontend Engineer</div>
+              <div class="job-dept">Engineering · PeopleCore</div>
+            </div>
+          </div>
+          <span class="badge badge-blue">Full-Time</span>
+        </div>
+        <div class="job-meta">
+          <span>📍 San Francisco, CA</span>
+          <span>💰 $120k–$150k</span>
+          <span>⏱️ Posted 2 days ago</span>
+        </div>
+        <p class="job-desc">We're looking for a skilled Frontend Engineer to join our product team, building beautiful and performant UIs with React and TypeScript.</p>
+        <div class="job-tags">
+          <span class="badge badge-blue">React</span>
+          <span class="badge badge-purple">TypeScript</span>
+          <span class="badge badge-green">Tailwind</span>
+        </div>
+        <div class="job-footer" style="margin-top:1rem;">
+          <div style="display:flex;align-items:center;">
+            <div class="applicant-avatars">
+              <div class="mini-avatar" style="background:#2563eb;">R</div>
+              <div class="mini-avatar" style="background:#7c3aed;">D</div>
+              <div class="mini-avatar" style="background:#0ea5e9;">F</div>
+            </div>
+            <span class="applicant-count">24 applicants</span>
+          </div>
+          <button class="btn btn-primary btn-sm" data-modal-open="applyModal">Apply Now</button>
+        </div>
+      </div>
+
+      <div class="card job-card" data-type="remote">
+        <div class="job-card-header">
+          <div style="display:flex;gap:.85rem;align-items:center;">
+            <div class="job-logo" style="background:#dcfce7;">🎨</div>
+            <div>
+              <div class="job-title">Product Designer</div>
+              <div class="job-dept">Design · PeopleCore</div>
+            </div>
+          </div>
+          <span class="badge badge-green">Remote</span>
+        </div>
+        <div class="job-meta">
+          <span>📍 Remote (Worldwide)</span>
+          <span>💰 $90k–$115k</span>
+          <span>⏱️ Posted 5 days ago</span>
+        </div>
+        <p class="job-desc">Join our design team to shape the future of HR software. You'll own end-to-end design from research to pixel-perfect delivery.</p>
+        <div class="job-tags">
+          <span class="badge badge-purple">Figma</span>
+          <span class="badge badge-blue">UX Research</span>
+          <span class="badge badge-yellow">Design Systems</span>
+        </div>
+        <div class="job-footer" style="margin-top:1rem;">
+          <div style="display:flex;align-items:center;">
+            <div class="applicant-avatars">
+              <div class="mini-avatar" style="background:#16a34a;">K</div>
+              <div class="mini-avatar" style="background:#d97706;">S</div>
+            </div>
+            <span class="applicant-count">18 applicants</span>
+          </div>
+          <button class="btn btn-primary btn-sm" data-modal-open="applyModal">Apply Now</button>
+        </div>
+      </div>
+
+      <div class="card job-card" data-type="full-time">
+        <div class="job-card-header">
+          <div style="display:flex;gap:.85rem;align-items:center;">
+            <div class="job-logo" style="background:#fef3c7;">📣</div>
+            <div>
+              <div class="job-title">Marketing Manager</div>
+              <div class="job-dept">Marketing · PeopleCore</div>
+            </div>
+          </div>
+          <span class="badge badge-blue">Full-Time</span>
+        </div>
+        <div class="job-meta">
+          <span>📍 New York, NY</span>
+          <span>💰 $85k–$105k</span>
+          <span>⏱️ Posted 1 week ago</span>
+        </div>
+        <p class="job-desc">Lead demand generation, content strategy, and brand initiatives for a fast-growing HR SaaS company with a global customer base.</p>
+        <div class="job-tags">
+          <span class="badge badge-yellow">SEO/SEM</span>
+          <span class="badge badge-blue">HubSpot</span>
+          <span class="badge badge-green">B2B SaaS</span>
+        </div>
+        <div class="job-footer" style="margin-top:1rem;">
+          <div style="display:flex;align-items:center;">
+            <div class="applicant-avatars">
+              <div class="mini-avatar" style="background:#dc2626;">A</div>
+              <div class="mini-avatar" style="background:#7c3aed;">B</div>
+              <div class="mini-avatar" style="background:#2563eb;">C</div>
+            </div>
+            <span class="applicant-count">31 applicants</span>
+          </div>
+          <button class="btn btn-primary btn-sm" data-modal-open="applyModal">Apply Now</button>
+        </div>
+      </div>
+
+      <div class="card job-card" data-type="contract">
+        <div class="job-card-header">
+          <div style="display:flex;gap:.85rem;align-items:center;">
+            <div class="job-logo" style="background:#ede9fe;">⚙️</div>
+            <div>
+              <div class="job-title">DevOps Engineer</div>
+              <div class="job-dept">Engineering · PeopleCore</div>
+            </div>
+          </div>
+          <span class="badge badge-purple">Contract</span>
+        </div>
+        <div class="job-meta">
+          <span>📍 Austin, TX / Remote</span>
+          <span>💰 $75–$95/hr</span>
+          <span>⏱️ Posted 3 days ago</span>
+        </div>
+        <p class="job-desc">6-month contract to help us scale our cloud infrastructure on AWS. Experience with Kubernetes and Terraform is essential.</p>
+        <div class="job-tags">
+          <span class="badge badge-yellow">AWS</span>
+          <span class="badge badge-blue">Kubernetes</span>
+          <span class="badge badge-green">Terraform</span>
+        </div>
+        <div class="job-footer" style="margin-top:1rem;">
+          <div style="display:flex;align-items:center;">
+            <div class="applicant-avatars">
+              <div class="mini-avatar" style="background:#0ea5e9;">M</div>
+              <div class="mini-avatar" style="background:#16a34a;">N</div>
+            </div>
+            <span class="applicant-count">9 applicants</span>
+          </div>
+          <button class="btn btn-primary btn-sm" data-modal-open="applyModal">Apply Now</button>
+        </div>
+      </div>
+
+      <div class="card job-card" data-type="full-time">
+        <div class="job-card-header">
+          <div style="display:flex;gap:.85rem;align-items:center;">
+            <div class="job-logo" style="background:#fee2e2;">🤝</div>
+            <div>
+              <div class="job-title">Sales Development Rep</div>
+              <div class="job-dept">Sales · PeopleCore</div>
+            </div>
+          </div>
+          <span class="badge badge-blue">Full-Time</span>
+        </div>
+        <div class="job-meta">
+          <span>📍 Chicago, IL</span>
+          <span>💰 $55k + Commission</span>
+          <span>⏱️ Posted 4 days ago</span>
+        </div>
+        <p class="job-desc">Drive top-of-funnel pipeline through outbound prospecting, cold outreach, and qualifying leads for our Account Executive team.</p>
+        <div class="job-tags">
+          <span class="badge badge-red">Outbound</span>
+          <span class="badge badge-blue">Salesforce</span>
+          <span class="badge badge-yellow">SaaS Sales</span>
+        </div>
+        <div class="job-footer" style="margin-top:1rem;">
+          <div style="display:flex;align-items:center;">
+            <div class="applicant-avatars">
+              <div class="mini-avatar" style="background:#d97706;">P</div>
+              <div class="mini-avatar" style="background:#2563eb;">Q</div>
+              <div class="mini-avatar" style="background:#16a34a;">R</div>
+            </div>
+            <span class="applicant-count">42 applicants</span>
+          </div>
+          <button class="btn btn-primary btn-sm" data-modal-open="applyModal">Apply Now</button>
+        </div>
+      </div>
+
+      <div class="card job-card" data-type="part-time">
+        <div class="job-card-header">
+          <div style="display:flex;gap:.85rem;align-items:center;">
+            <div class="job-logo" style="background:#e0f2fe;">📊</div>
+            <div>
+              <div class="job-title">HR Data Analyst</div>
+              <div class="job-dept">HR · PeopleCore</div>
+            </div>
+          </div>
+          <span class="badge badge-yellow">Part-Time</span>
+        </div>
+        <div class="job-meta">
+          <span>📍 Remote (US)</span>
+          <span>💰 $45k–$55k (pro-rated)</span>
+          <span>⏱️ Posted 6 days ago</span>
+        </div>
+        <p class="job-desc">Analyse HR metrics, produce workforce reports, and support data-driven decisions across the People team. 20 hrs/week.</p>
+        <div class="job-tags">
+          <span class="badge badge-blue">SQL</span>
+          <span class="badge badge-purple">Tableau</span>
+          <span class="badge badge-green">Excel</span>
+        </div>
+        <div class="job-footer" style="margin-top:1rem;">
+          <div style="display:flex;align-items:center;">
+            <div class="applicant-avatars">
+              <div class="mini-avatar" style="background:#0ea5e9;">T</div>
+            </div>
+            <span class="applicant-count">7 applicants</span>
+          </div>
+          <button class="btn btn-primary btn-sm" data-modal-open="applyModal">Apply Now</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- APPLY MODAL -->
+<div class="modal-overlay" id="applyModal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div>
+        <h3>Apply for This Position</h3>
+        <p style="font-size:.85rem;margin:.2rem 0 0;color:var(--gray-500);">Fill in your details and we'll be in touch.</p>
+      </div>
+      <button class="modal-close" data-modal-close="applyModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="applicationForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input name="firstName" class="form-control" placeholder="Jane" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name *</label>
+            <input name="lastName" class="form-control" placeholder="Doe" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input name="email" type="email" class="form-control" placeholder="jane@example.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input name="phone" type="tel" class="form-control" placeholder="+1 (555) 000-0000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">LinkedIn / Portfolio URL</label>
+          <input name="portfolio" type="url" class="form-control" placeholder="https://linkedin.com/in/yourprofile" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cover Letter</label>
+          <textarea name="coverLetter" class="form-control" rows="4" placeholder="Tell us why you're excited about this role…" style="resize:vertical;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Resume / CV *</label>
+          <input name="resume" type="file" class="form-control" accept=".pdf,.doc,.docx" required />
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:1rem;">
+          <button type="button" class="btn btn-outline" data-modal-close="applyModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Application</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- POST JOB MODAL -->
+<div class="modal-overlay" id="postJobModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Post a New Job</h3>
+      <button class="modal-close" data-modal-close="postJobModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="postJobForm">
+        <div class="form-group">
+          <label class="form-label">Job Title *</label>
+          <input name="title" class="form-control" placeholder="e.g. Senior Product Manager" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Department *</label>
+            <select name="dept" class="form-control" required>
+              <option value="">Select…</option>
+              <option>Engineering</option><option>Design</option>
+              <option>Marketing</option><option>Sales</option>
+              <option>HR</option><option>Finance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Employment Type *</label>
+            <select name="type" class="form-control" required>
+              <option value="">Select…</option>
+              <option>Full-Time</option><option>Part-Time</option>
+              <option>Contract</option><option>Remote</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input name="location" class="form-control" placeholder="e.g. New York, NY" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Salary Range</label>
+            <input name="salary" class="form-control" placeholder="e.g. $90k–$120k" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Description *</label>
+          <textarea name="description" class="form-control" rows="4" placeholder="Describe the role and responsibilities…" required style="resize:vertical;"></textarea>
+        </div>
+        <div class="modal-footer" style="padding:0;border:none;margin-top:1rem;">
+          <button type="button" class="btn btn-outline" data-modal-close="postJobModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Publish Job</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-bottom" style="padding:1.5rem 0;">
+    <span>© 2026 PeopleCore HR. All rights reserved.</span>
+    <span>
+      <a href="index.html" style="color:rgba(255,255,255,.5);">Home</a> ·
+      <a href="employees.html" style="color:rgba(255,255,255,.5);">Employees</a> ·
+      <a href="dashboard.html" style="color:rgba(255,255,255,.5);">Dashboard</a>
+    </span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  // Filter tabs
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.dataset.filter;
+      document.querySelectorAll('#jobListings .job-card').forEach(card => {
+        card.closest('.card').style.display =
+          (filter === 'all' || card.dataset.type === filter) ? '' : 'none';
+      });
+    });
+  });
+
+  // Post job form
+  document.getElementById('postJobForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    closeModal('postJobModal');
+    e.target.reset();
+    showToast('Job posted successfully!', 'success');
+  });
+</script>
+</body>
+</html>
